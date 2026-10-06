@@ -15,7 +15,8 @@ public class Garlic_Heist {
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        System.out.println("+------+");
+        Newgame = new Plateau(5,5);
+        Newgame.affichage();
         
     }
 

@@ -22,6 +22,7 @@ public class Plateau {
     }
     
     public void affichage(){
-        
+        this.affichagex = "+-----+";
+        System.out.println(affichagex);
     }
 }
