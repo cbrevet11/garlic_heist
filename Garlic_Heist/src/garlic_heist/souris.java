@@ -12,18 +12,19 @@ public class souris {
     private String deplacement;
     private int vie;
     private int nourriture;
-        
+    
     
     public souris(){
-        this
+        this.deplacement= deplacement;
+        this.nourriture= nourriture;
+        this.vie= vie;
     }
-    
     
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        // TODO code application logic here
+        
     }
     
 }
