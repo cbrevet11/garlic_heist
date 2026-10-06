@@ -12,13 +12,29 @@ public class souris {
     private String deplacement;
     private int vie;
     private int nourriture;
+    private double[] position = new double[2];
     
     
     public souris(){
         this.deplacement= deplacement;
         this.nourriture= nourriture;
         this.vie= vie;
+        this.position=position;
+        
     }
+    public void deplacementhaut(){
+        this.position[1]=this.position[1]+1;
+    }
+    public void deplacementbas(){
+        this.position[1]=this.position[1]-1;
+    }
+    public void deplacementgauche(){
+        this.position[1]=this.position[0]+1;
+    }
+    public void deplacementdroite(){
+        this.position[1]=this.position[0]-1;
+    }
+    public int reaparition
     
     /**
      * @param args the command line arguments
