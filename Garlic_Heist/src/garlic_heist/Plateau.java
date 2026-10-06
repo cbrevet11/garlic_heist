@@ -1,5 +1,9 @@
 package garlic_heist;
 
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+
 public class Plateau {
     private char[][] cases;
     private int nbLignes;
@@ -12,7 +16,7 @@ public class Plateau {
 
         for (int y = 0; y < nbLignes; y++) {
             for (int x = 0; x < nbColonnes; x++) {
-                cases[i][j] = '.';
+                cases[y][x] = '.';
             }
         }
     }
@@ -30,6 +34,13 @@ public class Plateau {
         }
 
         System.out.println(bordure);
+                ImageIcon image = new ImageIcon("images/plateau.png");
+
+        JFrame fenetre = new JFrame("Garlic Heist");
+        fenetre.add(new JLabel(image));
+        fenetre.pack();
+        fenetre.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        fenetre.setVisible(true);
     }
 
     public void creationObstacle() {

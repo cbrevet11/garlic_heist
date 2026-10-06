@@ -19,8 +19,6 @@ public class Garlic_Heist {
         // TODO code application logic here
         //Plateau Newgame = new Plateau(5,5);
         //Newgame.affichage();
-        System.out.println(new java.io.File("images/plateau.png").getAbsolutePath());
-        System.out.println(new java.io.File("images/plateau.png").exists());
         ImageIcon image = new ImageIcon("images/plateau.png");
 
         JFrame fenetre = new JFrame("Garlic Heist");
