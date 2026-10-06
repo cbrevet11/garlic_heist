@@ -19,8 +19,8 @@ public class BOTS {
     private String nom;
     private double[] position = new double[2];
     private double vitesse;
-    private double x;
-    private double y;
+    private int x;
+    private int y;
     
         
     public BOTS(String nom, int posX, int posY, double vitesse){
@@ -34,29 +34,32 @@ public class BOTS {
     
     }
     
-    public déplacement(){
+    public void déplacement(){
         // si le vampire est en contacte avec une souris il l'attaque automatiquement ( détection des colisions avec une souris)
     }
     
-    public attaque(){
+    public void attaque(){
         
     }
     
-    public patrouille(){
+    public void patrouille(){
         
     }
     
-    public void detectionSouris(double souris1,double souris2,double souris3, ){
-        int distanceX1 = souris1 - this.x;
-        int distanceY1 = souris1 - this.y;
+    public void detectionSouris(int souris1x, int souris1y, int souris2x, int souris2y, int souris3x, int souris3y, int souris4x, int souris4y ){
+        int distanceX1 = souris1x - this.x;
+        int distanceY1 = souris1y - this.y;
         
-        int distanceX2 = souris2 - x;
-        int distanceY2 = souris2 - y;
+        int distanceX2 = souris2x - x;
+        int distanceY2 = souris2y - y;
         
-        int distanceX3 = souris3 - x;
-        int distanceY3 = souris3 - y;
+        int distanceX3 = souris3x- x;
+        int distanceY3 = souris3y - y;
         
-        if (Math.abs(distanceX1) <= 5 && Math.abs(distanceY1) <= 5 || Math.abs(distanceX2) <= 5 && Math.abs(distanceY2) <= 5 || Math.abs(distanceX3) <= 5 && Math.abs(distanceY3) <= 5) {
+        int distanceX4 = souris4x- x;
+        int distanceY4 = souris4y - y;
+        
+        if (Math.abs(distanceX1) <= 5 && Math.abs(distanceY1) <= 5 || Math.abs(distanceX2) <= 5 && Math.abs(distanceY2) <= 5 || Math.abs(distanceX3) <= 5 && Math.abs(distanceY3) <= 5 || Math.abs(distanceX4) <= 5 && Math.abs(distanceY4) <= 5) {
         }
     }
     
