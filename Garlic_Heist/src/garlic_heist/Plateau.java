@@ -19,10 +19,26 @@ public class Plateau {
         this.nbLignes = nbLignes;
         this.nbColonnes = nbColonnes;
         cases = new char[nbLignes][nbColonnes];
+        
+        for (int i = 0; i < nbLignes; i++) {
+            for (int j = 0; j < nbColonnes; j++) {
+                cases[i][j] = '.';
+            }
+        }
     }
     
     public void affichage(){
         this.affichagex = "+-----+";
         System.out.println(affichagex);
+        
+        for (int i = 0; i < nbLignes; i++) {
+            System.out.print("|");
+            for (int j = 0; j < nbColonnes; j++) {
+                
+                System.out.print(cases[i][j]);
+            }
+            System.out.println("|");
+        }        
+        
     }
 }
