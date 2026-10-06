@@ -20,7 +20,7 @@ public class souris {
         this.nourriture= nourriture;
         this.vie= 3;
         this.position=position;
-        this.nom=nom
+        this.nom=nom;
         
     }
     public void deplacementhaut(){
@@ -39,12 +39,14 @@ public class souris {
         if(this.vie==0){
             System.out.println("la souris est morte"); 
     }
+    }
+    /*
     public void perte_vie(){
     if (Math.abs(this.position[0] - position.BOTS[0]) 
             + Math.abs(this.position[1] - position.BOTS[1]) == 1){
         this.vie=this.vie-1;
     }
-    
+    */
 
     }
 
@@ -54,13 +56,13 @@ public class souris {
             this.nourriture[1]=nourriture
     }
     */
-    }
+    
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
         
     }
-    
-}
+
+
 
