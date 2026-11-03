@@ -3,7 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package garlic_heist;
-
+import java.util.ArrayList;
 /**
  *
  * @author achainel
@@ -11,11 +11,13 @@ package garlic_heist;
 public class Bot {
     
     private String nom;
-    private double[] position = new double[2];
     private int x;
     private int y;
     private double vitesse;
     private String direction;
+    private ArrayList<int[]> chemin;
+    private int prochaineEtape;
+    private boolean cheminTrouve;
     
         
     public Bot(String nom, int posX, int posY, double vitesse){
@@ -34,7 +36,10 @@ public class Bot {
     public void setDirection(String direction){
         this.direction = direction;
     }
-    public int[] getposition (){
+    public String getDirection(){
+        return direction;
+    }
+    public int[] getPosition (){
         return new int[]{x,y};
     }
     
@@ -42,14 +47,58 @@ public class Bot {
     public int getX() {
         return x;
     }
-    public void setX(x) {
-        this.x = x ;   
+    public void setX(int x) {
+        this.x = x ;
+    }
+    
     public int getY() {
         return y;
     }
+    public void setY(int y) {
+        this.y = y;
+    }
     
-    public void déplacement(){
-        // si le vampire est en contacte avec une souris il l'attaque automatiquement ( détection des colisions avec une souris)
+    
+    
+    
+    
+    public boolean deplacerVers(Carte carte, int destinationX,int destinationY) {
+
+        chemin = carte.trouverChemin(x, y, destinationX, destinationY);
+        prochaineEtape = 0;
+        return true;
+    }
+    
+    public boolean avancer() {
+
+        if (prochaineEtape >= chemin.size()) {
+            return false;
+        }
+
+        int nouvelleX = chemin.get(prochaineEtape)[0];
+        int nouvelleY = chemin.get(prochaineEtape)[1];
+
+        // Oriente le vampire selon son deplacement
+        if (nouvelleX > x) {
+            direction = "droite";
+        }
+        else if (nouvelleX < x) {
+            direction = "gauche";
+        }
+        else if (nouvelleY > y) {
+            direction = "bas";
+        }
+        else if (nouvelleY < y) {
+            direction = "haut";
+        }
+
+        // Change sa position
+        x = nouvelleX;
+        y = nouvelleY;
+
+        prochaineEtape++;
+
+        return true;
     }
     
     public void attaque(){
@@ -60,28 +109,44 @@ public class Bot {
        
     }
     
-    public boolean detecterDevant(Bot autre) {
-
-    if (direction.equals("haut")) {
-        return autre.getX() == x && autre.getY() < y;
-    }
-
-    if (direction.equals("bas")) {
-        return autre.getX() == x && autre.getY() > y;
-    }
-
-    if (direction.equals("gauche")) {
-        return autre.getY() == y && autre.getX() < x;
-    }
-
-    if (direction.equals("droite")) {
-        return autre.getY() == y && autre.getX() > x;
-    }
-
-    return false;
-}
-    public void patrouille(){
+    public boolean detecterZone(int sourisX, int sourisY) {
         
+        int distanceX = sourisX - x;
+        int distanceY = sourisY - y;
+                
+        boolean autour = Math.abs(distanceX) <= 1 && Math.abs(distanceY) <= 1 && (distanceX != 0 || distanceY != 0);
+        
+        boolean devant = false;
+
+        if (direction.equals("haut")) {
+            devant = distanceY >= -5 && distanceY <= -1 && Math.abs(distanceX) <= 1;
+        }
+        else if (direction.equals("bas")) {
+            devant = distanceY >= 1 && distanceY <= 5 && Math.abs(distanceX) <= 1;
+        }
+        else if (direction.equals("gauche")) {
+            devant = distanceX >= -5 && distanceX <= -1 && Math.abs(distanceY) <= 1;
+        }
+        else if (direction.equals("droite")) {
+            devant = distanceX >= 1 && distanceX <= 5 && Math.abs(distanceY) <= 1;
+        }
+
+        return autour || devant;
+}
+    public void tour(){
+        if (direction.equals("haut")) {
+        direction = "droite";
+        }
+        else if (direction.equals("droite")) {
+            direction = "bas";
+        }
+        else if (direction.equals("bas")) {
+            direction = "gauche";
+        }
+        else if (direction.equals("gauche")) {
+            direction = "haut";
+        }
+
     }
     
     public void detectionSouris(int souris1x, int souris1y, int souris2x, int souris2y, int souris3x, int souris3y, int souris4x, int souris4y ){
