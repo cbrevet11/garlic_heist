@@ -19,7 +19,7 @@ public class souris {
     private BOTS bot;
     private Objets nourritures;
     private Objets positionobj;        
-    //tt        
+    //ttllll        
     public souris() {
         this.deplacement = deplacement;
         this.vie = 3;
