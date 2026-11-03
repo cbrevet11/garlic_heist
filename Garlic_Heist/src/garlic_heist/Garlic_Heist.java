@@ -3,14 +3,18 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
  */
 package garlic_heist;
+import java.awt.Graphics2D;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-/**
- *
- * @author achainel
- */
-public class Garlic_Heist {
+import javax.swing.Timer;
+
+
+
+public class Garlic_Heist extends JFrame implements ActionListener {
 
     /**
      * @param args the command line arguments
@@ -19,13 +23,8 @@ public class Garlic_Heist {
         // TODO code application logic here
         //Plateau Newgame = new Plateau(5,5);
         //Newgame.affichage();
-        ImageIcon image = new ImageIcon("images/plateau.png");
-
-        JFrame fenetre = new JFrame("Garlic Heist");
-        fenetre.add(new JLabel(image));
-        fenetre.pack();
-        fenetre.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        fenetre.setVisible(true);
+        
+        
     }
 
 }
