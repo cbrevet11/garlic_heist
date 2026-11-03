@@ -1,4 +1,4 @@
-package TileMapping;
+package garlic_heist;
 
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
