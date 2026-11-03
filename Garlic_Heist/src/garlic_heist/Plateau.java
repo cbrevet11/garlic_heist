@@ -53,3 +53,5 @@ public class Plateau {
         return cases[y][x] == '#';
     }
 }
+
+hhhh
