@@ -25,7 +25,7 @@ public class Garlic_Heist extends JFrame implements ActionListener {
     //Les Listeners
     private EcouteurClavier keyL;
 
-    public FenetreDeJeu() {
+    public Garlic_Heist () {
         // initialisation de la fenetre
         this.setSize(607, 380);
         this.setResizable(false);

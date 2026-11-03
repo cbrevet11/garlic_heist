@@ -4,12 +4,12 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 
-public class Plateau {
+public class PlateauDeJeu {
     private char[][] cases;
     private int nbLignes;
     private int nbColonnes;
 
-    public Plateau(int nbLignes, int nbColonnes) {
+    public PlateauDeJeu(int nbLignes, int nbColonnes) {
         this.nbLignes = nbLignes;
         this.nbColonnes = nbColonnes;
         cases = new char[nbLignes][nbColonnes];
