@@ -8,8 +8,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.Timer;
-
-
+import garlic_heist.souris;
 
 public class Garlic_Heist extends JFrame implements ActionListener{
 
@@ -18,6 +17,8 @@ public class Garlic_Heist extends JFrame implements ActionListener{
     private Jeu jeu;
     private Timer timer;
     private JLabel jLabel1;
+
+
 
     public Garlic_Heist() {
         // initialisation de la fenetre
@@ -41,6 +42,7 @@ public class Garlic_Heist extends JFrame implements ActionListener{
         // Creation du Timer qui appelle this.actionPerformed() tous les 40 ms
         this.timer = new Timer(40, this);
         this.timer.start();
+
     }
 
     // Methode appelee par le timer et qui contient la boucle de jeu
