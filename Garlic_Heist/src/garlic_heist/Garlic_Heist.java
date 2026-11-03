@@ -14,13 +14,21 @@ import javax.swing.Timer;
 
 
 
-public class Garlic_Heist extends JFrame implements ActionListener {
+public class Garlic_Heist {
 
 
-    
-    //Les Listeners
+    public souris souris;
+    public BOTS bots;
+    public PlateauDeJeu fond;
 
 
     public Garlic_Heist () {
-        // initialisation de la fenetre
+    }
+    public void miseAJour() {
+        this.souris.deplacementhaut();
+        this.souris.deplacementbas();
+        this.souris.deplacementdroite();
+        this.souris.deplacementgauche();
+    }
+        
     }
