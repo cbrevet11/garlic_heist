@@ -19,8 +19,6 @@ public class Garlic_Heist extends JFrame implements ActionListener{
     private JLabel jLabel1;
 
 
-    public static void main(String[] args) {
-        souris s =new souris();
 
     public Garlic_Heist() {
         // initialisation de la fenetre

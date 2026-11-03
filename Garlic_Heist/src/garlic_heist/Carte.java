@@ -66,8 +66,8 @@ public class Carte {
 
     public Carte() {
         try {
-            BufferedImage tileset = ImageIO.read(getClass().getResource("images/tileSetMinecraft32x32.png"));
-            uneTuile = tileset.getSubimage(0, 0, tailleTuile, tailleTuile);
+            BufferedImage tileset = ImageIO.read(getClass().getClassLoader().getResource("resources/tileset_chateau.png"));
+            uneTuile = tileset.getSubimage(50, 0, tailleTuile, tailleTuile);
         } catch (IOException ex) {
             Logger.getLogger(Carte.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -78,6 +78,11 @@ public class Carte {
     }
 
     public void rendu(Graphics2D contexte) {
-        contexte.drawImage(uneTuile, 0, 0, null);
+        
+        for (int x = 0; x<largeur;x++ ){
+            for (int y = 0; y<hauteur; y++){
+                contexte.drawImage(uneTuile, x, y, null);
+            }
+        }
     }
 }
