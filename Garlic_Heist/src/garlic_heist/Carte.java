@@ -2,8 +2,11 @@ package garlic_heist;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 
 public class Carte {
@@ -53,29 +56,28 @@ public class Carte {
         return cases[y][x] == '#';
     }
 
-    // Dessine toute la carte, case par case
-    public void rendu(Graphics2D g) {
-        for (int y = 0; y < nbLignes; y++) {
-            for (int x = 0; x < nbColonnes; x++) {
-                BufferedImage img = images.get(cases[y][x]);
-                if (img != null) {
-                    g.drawImage(img, x * TAILLE, y * TAILLE, null);
-                }
-            }
+    
+    
+    private int largeur = 12;
+    private int hauteur = 9;
+    private int tailleTuile = 32;
+    
+    private BufferedImage uneTuile;
+
+    public Carte() {
+        try {
+            BufferedImage tileset = ImageIO.read(getClass().getResource("images/tileSetMinecraft32x32.png"));
+            uneTuile = tileset.getSubimage(0, 0, tailleTuile, tailleTuile);
+        } catch (IOException ex) {
+            Logger.getLogger(Carte.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    // Garde votre affichage console (utile pour déboguer), sans fenêtre
-    public void affichage() {
-        String bordure = "+" + "-".repeat(nbColonnes) + "+";
-        System.out.println(bordure);
-        for (int i = 0; i < nbLignes; i++) {
-            System.out.print("|");
-            for (int j = 0; j < nbColonnes; j++) {
-                System.out.print(cases[i][j]);
-            }
-            System.out.println("|");
-        }
-        System.out.println(bordure);
+    public void miseAJour() {
+
+    }
+
+    public void rendu(Graphics2D contexte) {
+        contexte.drawImage(uneTuile, 0, 0, null);
     }
 }
