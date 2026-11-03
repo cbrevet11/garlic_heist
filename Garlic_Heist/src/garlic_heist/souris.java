@@ -14,12 +14,14 @@ public class souris {
     private int vie;
     private double[] nourriture = new double[1];
     private double[] position = new double[2];
-    private String[] nourrituresouris = new String [1];
+    private Objets[] nourrituresouris = new Objets [1];
     private String nom;
-    private BOTS bot;
+    private Bot bot;
     private Objets nourritures;
     private Objets positionobj;        
-    //ttllll        
+          
+    
+    
     public souris() {
         this.deplacement = deplacement;
         this.vie = 3;
@@ -54,7 +56,7 @@ public class souris {
         }
     }
 
-    public void perte_vie(BOTS botEnnemi) {
+    public void perte_vie(Bot botEnnemi) {
         double[] posBot = botEnnemi.getposition(); 
         if (Math.abs(this.position[0] - posBot[0]) + Math.abs(this.position[1] - posBot[1]) == 1) {
             this.vie = this.vie - 1;
@@ -65,13 +67,15 @@ public class souris {
         }
     }
   
-
-    public void recuperation_objet(Objets nourriture){
-        double[] posobjets = nourritures.getposition();
-        if (Math.abs(this.position[0] - posobjets[0]) + Math.abs(this.position[1] - posobjets[1]) == 1) {
-            this.nourrituresouris=this.nourrituresouris[this.nourriture];            
+    public void recuperation_objet(Objets nourriture) {
+        double[][] toutesLesNourritures = nourriture.getNourritures();
+        for (int i = 0; i < toutesLesNourritures.length; i++) {
+            double[] posobjets = toutesLesNourritures[i];           
+            if (this.position[0] == posobjets[0] && this.position[1] == posobjets[1]) {
+                this.nourrituresouris[0] = nourriture;            
+                posobjets[0] = -1; 
+                posobjets[1] = -1;  
             }
-
+        }
     }
 }
-*/
