@@ -66,6 +66,11 @@ public class Bot {
 
         chemin = carte.trouverChemin(x, y, destinationX, destinationY);
         prochaineEtape = 0;
+        
+        if (chemin.isEmpty()
+            && (x != destinationX || y != destinationY)) {
+        return false;
+        }
         return true;
     }
     
