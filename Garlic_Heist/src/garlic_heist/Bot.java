@@ -1,6 +1,6 @@
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package garlic_heist;
 
@@ -8,30 +8,44 @@ package garlic_heist;
  *
  * @author achainel
  */
-public class BOTS {
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        // TODO code application logic here
-    }
+public class Bot {
+    
     private String nom;
     private double[] position = new double[2];
-    private double vitesse;
     private int x;
     private int y;
+    private double vitesse;
+    private String direction;
     
         
-    public BOTS(String nom, int posX, int posY, double vitesse){
-        this.nom = "Tom";
-        this.x = 0;
-        this.y = 0;
-        this.vitesse = 0;
+    public Bot(String nom, int posX, int posY, double vitesse){
+        this.nom = nom;
+        this.x = posX;
+        this.y = posY;
+        this.vitesse = vitesse;
+        this.direction = "droite";
     }
-        public double[] getposition (){
-        return position;
     
+    
+    
+    
+    // recupere ou change la direction du regard du bot 
+    
+    public void setDirection(String direction){
+        this.direction = direction;
+    }
+    public int[] getposition (){
+        return new int[]{x,y};
+    }
+    
+    
+    public int getX() {
+        return x;
+    }
+    public void setX(x) {
+        this.x = x ;   
+    public int getY() {
+        return y;
     }
     
     public void déplacement(){
@@ -42,6 +56,30 @@ public class BOTS {
         
     }
     
+    public void piegeAil(){
+       
+    }
+    
+    public boolean detecterDevant(Bot autre) {
+
+    if (direction.equals("haut")) {
+        return autre.getX() == x && autre.getY() < y;
+    }
+
+    if (direction.equals("bas")) {
+        return autre.getX() == x && autre.getY() > y;
+    }
+
+    if (direction.equals("gauche")) {
+        return autre.getY() == y && autre.getX() < x;
+    }
+
+    if (direction.equals("droite")) {
+        return autre.getY() == y && autre.getX() > x;
+    }
+
+    return false;
+}
     public void patrouille(){
         
     }
