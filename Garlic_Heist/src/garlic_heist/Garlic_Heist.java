@@ -9,7 +9,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.Timer;
 
-kkkk
 
 public class Garlic_Heist extends JFrame implements ActionListener{
 
