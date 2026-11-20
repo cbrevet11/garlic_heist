@@ -59,6 +59,10 @@ public class Garlic_Heist extends JFrame implements ActionListener{
         Garlic_Heist fenetre = new Garlic_Heist();
         fenetre.setVisible(true);
         souris s =new souris();
+        
+        
+        
+        
     }
     
 
