@@ -21,6 +21,8 @@ public class Bot {
     private ArrayList<int[]> chemin;
     private int prochaineEtape;
     private boolean cheminTrouve;
+    private boolean estBloque = false;
+    private long finBlocageTimestamp = 0;
     
         
     public Bot(String nom, int posX, int posY, double vitesse){
@@ -34,14 +36,22 @@ public class Bot {
     public enum EtatBot {
         PATROUILLE,
         POURSUITE,
-        RETOUR
+        RETOUR,
+        TOURNE
     }
     
     private EtatBot etatActuel = EtatBot.PATROUILLE;
+    private Random random = new Random();
     
+    // Pour mémoriser le dernier point avant la poursuite
+    private int dernierPointX, dernierPointY;
+    
+    
+    // --------------------------------------------------------
+    //              SETTER/GETTER
+    // --------------------------------------------------------
     
     // recupere ou change la direction du regard du bot 
-    
     public void setDirection(String direction){
         this.direction = direction;
     }
@@ -68,21 +78,97 @@ public class Bot {
     }
     
     
+    // --------------------------------------------------------
+    //              DEPLACEMENT DU BOT
+    // --------------------------------------------------------
     
     
-    
-    public boolean deplacerVers(Carte carte, int destinationX,int destinationY) {
-
-        chemin = carte.trouverChemin(x, y, destinationX, destinationY);
-        prochaineEtape = 0;
+    public void agir(Carte carte, souris souris) {
         
-        if (chemin.isEmpty()
-            && (x != destinationX || y != destinationY)) {
-        return false;
+        piegeAil(carte);// 1. On vérifie d'abord s'il y a un piège à ail sous ses pieds
+
+        
+        if (estBloque) {// 2. S'il est bloqué par l'ail, il ne fait rien de ce tour
+            return; 
         }
-        return true;
+        // Transition vers la poursuite si on patrouille et qu'on détecte la souris
+        if (etatActuel == EtatBot.PATROUILLE && detecterZone(souris.getPositionX(), souris.getPositionY())) {
+            etatActuel = EtatBot.POURSUITE;
+            dernierPointX = x;
+            dernierPointY = y;
+        }
+
+        // Gestion des états 
+        if (etatActuel == EtatBot.PATROUILLE) {
+            if (chemin == null || prochaineEtape >= chemin.size()) {
+                newDestinationAleatoire(carte);
+            } else {
+                avancer();
+            }
+        } 
+        else if (etatActuel == EtatBot.POURSUITE) {
+            if (detecterZone(souris.getPositionX(), souris.getPositionY())) {
+                // Si le bot l'a attrapée
+                if (Math.abs(souris.getPositionX() - x) <= 1 && Math.abs(souris.getPositionY() - y) <= 1) {
+                    attaque(souris); 
+                    etatActuel = EtatBot.RETOUR; 
+                    deplacerVers(carte, dernierPointX, dernierPointY); 
+                } 
+                else {
+                    // Poursuit la souris en temps réel
+                    deplacerVers(carte, souris.getPositionX(), souris.getPositionY());
+                    avancer();
+                }
+            } 
+            else {
+                // Souris perdue de vue, on retourne au point de départ
+                etatActuel = EtatBot.RETOUR;
+                deplacerVers(carte, dernierPointX, dernierPointY);
+            }
+        } 
+        else if (etatActuel == EtatBot.RETOUR) {
+            if (chemin == null || prochaineEtape >= chemin.size()) {
+                etatActuel = EtatBot.PATROUILLE;
+            } 
+            else {
+                avancer();
+            }
+        }
     }
+    private void newDestinationAleatoire(Carte carte) {
+    int maxEssais = 50; 
+    int destX, destY;
+
+    do {
+        // Utilise les dimensions réelles de la carte (24x14)
+        destX = random.nextInt(carte.getNbColonnes()); 
+        destY = random.nextInt(carte.getNbLignes());
+        
+        // Si la case est accessible, on valide cette destination
+        if (carte.caseAccessible(destX, destY)) {
+            deplacerVers(carte, destX, destY);
+            return;
+        }
+        maxEssais--;
+    } while (maxEssais > 0);
+}
     
+    
+    
+    public boolean deplacerVers(Carte carte, int destinationX, int destinationY) {
+        this.chemin = carte.trouverChemin(x, y, destinationX, destinationY);
+        this.prochaineEtape = 0;
+
+        // Sécurité : si le chemin est null ou vide alors qu'on n'est pas déjà sur place
+        if (this.chemin == null || (this.chemin.isEmpty() && (x != destinationX || y != destinationY))) {
+            this.chemin = new ArrayList<>(); // Évite le null
+            this.cheminTrouve = false;
+            return false;
+        }
+
+    this.cheminTrouve = true;
+    return true;
+}
     public boolean avancer() {
 
         if (prochaineEtape >= chemin.size()) {
@@ -115,14 +201,28 @@ public class Bot {
         return true;
     }
     
-    public void attaque(){
-        
+    public void attaque(souris souris){
+        souris.retournerAuSpawn();
     }
     
-    public void piegeAil(){
-       
+    public void piegeAil(Carte carte) {
+        // Si le bot est déjà bloqué, on vérifie si les 2 secondes sont écoulées
+        if (estBloque) {
+            if (System.currentTimeMillis() >= finBlocageTimestamp) {
+                estBloque = false; // Le blocage est terminé
+            }
+            return; // Tant qu'il est bloqué, il ne fait rien d'autre
+        }
+
+        // Si la case actuelle contient de l'ail ('A')
+        if (carte.getCase(x, y) == 'A') {
+            estBloque = true;
+            finBlocageTimestamp = System.currentTimeMillis() + 2000; // Bloqué pendant 2000 ms (2 secondes)
+            System.out.println(nom + " a marché sur de l'ail et est bloqué !");
+        }
     }
     
+   
     public boolean detecterZone(int sourisX, int sourisY) {
         
         int distanceX = sourisX - x;
@@ -179,17 +279,4 @@ public class Bot {
         if (Math.abs(distanceX1) <= 5 && Math.abs(distanceY1) <= 5 || Math.abs(distanceX2) <= 5 && Math.abs(distanceY2) <= 5 || Math.abs(distanceX3) <= 5 && Math.abs(distanceY3) <= 5 || Math.abs(distanceX4) <= 5 && Math.abs(distanceY4) <= 5) {
         }
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 }
