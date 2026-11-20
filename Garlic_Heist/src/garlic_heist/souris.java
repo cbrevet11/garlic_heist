@@ -1,8 +1,10 @@
+
+
 package garlic_heist;
 
 /**
  *
- * @author vdaviet
+ * @author vdaviet est un benet
  */
 public class souris {
 
@@ -24,6 +26,14 @@ public class souris {
 
     public double[] getposition() {
         return position;
+    }
+
+    public int getPositionX() {
+        return (int) this.position[0];
+    }
+
+    public int getPositionY() {
+        return (int) this.position[1];
     }
 
     public String getnom() {
