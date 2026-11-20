@@ -4,7 +4,7 @@ package garlic_heist;
 
 /**
  *
- * @author vdaviet est un benet
+ * @author vdaviet 
  */
 public class souris {
 
