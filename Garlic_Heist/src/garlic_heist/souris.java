@@ -53,7 +53,7 @@ public class souris {
     }
 
     public void perte_vie(Bot botEnnemi) {
-        double[] posBot = botEnnemi.getposition();
+        double[] posBot = botEnnemi.getPosition();
         if (Math.abs(this.position[0] - posBot[0]) + Math.abs(this.position[1] - posBot[1]) == 1) {
             this.vie = this.vie - 1;
             if (this.vie < 0) {
