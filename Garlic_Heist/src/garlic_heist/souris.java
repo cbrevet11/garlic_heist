@@ -1,8 +1,10 @@
+
+
 package garlic_heist;
 
 /**
  *
- * @author vdaviet
+ * @author vdaviet est un benet
  */
 public class souris {
 
@@ -24,6 +26,14 @@ public class souris {
 
     public double[] getposition() {
         return position;
+    }
+
+    public int getPositionX() {
+        return (int) this.position[0];
+    }
+
+    public int getPositionY() {
+        return (int) this.position[1];
     }
 
     public String getnom() {
@@ -53,7 +63,7 @@ public class souris {
     }
 
     public void perte_vie(Bot botEnnemi) {
-        double[] posBot = botEnnemi.getPosition();
+        double[] posBot = botEnnemi.getposition();
         if (Math.abs(this.position[0] - posBot[0]) + Math.abs(this.position[1] - posBot[1]) == 1) {
             this.vie = this.vie - 1;
             if (this.vie < 0) {
