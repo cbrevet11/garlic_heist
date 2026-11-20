@@ -80,7 +80,7 @@ public class souris {
                     // On met les coordonnées à -1 pour qu'il disparaisse de la grille
                     posobjets[0] = -1; 
                     posobjets[1] = -1;  
-                    System.out.println("Nourriture récupérée !");
+                    System.out.println("Nourriture récupérée !"); 
                 }
             }
         }
