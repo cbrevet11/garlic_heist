@@ -17,19 +17,29 @@ public class Carte {
 
     // Le plan : une lettre = un type de tuile
     private static final String[] PLAN = {
-        "------------------------",
-        "|..........|...........|",
-        "|..........|...........|",
-        "|..........|...........|",
-        "|..........|...........|",
-        "|..........|...........|",
-        "------------------------",
-        "|..........|...........|",
-        "|..........|...........|",
-        "|..........|...........|",
-        "|..........|...........|",
-        "|..........|...........|",
-        "------------------------"
+        "##############",
+        "#....##......#",
+        "#....##..~~..#",
+        "#....##..~~..#",
+        "#............#",
+        "#....##..~~..#",
+        "######..~~...#",
+        "#....#...~~..#",
+        "#....#...~~..#",
+        "#....#.......#",
+        "######..######",
+        "....##..##....",
+        "....##..##....",
+        "######..######",
+        "#....#.......#",
+        "#....#..##...#",
+        "#....#..##...#",
+        "#....#.......#",
+        "######..######",
+        "#............#",
+        "#............#",
+        "#............#",
+        "##############"
     };
 
     // Un modèle d'objet : un rectangle découpé dans le tileset
@@ -73,20 +83,55 @@ public class Carte {
             System.out.println("Impossible de charger le tileset : " + e);
         }
 
-        // ----- Tuiles simples : lettre, colonne, ligne, bloque le passage ? -----
-        definir('.', 13, 3, false);   // sol
-        definir('-', 1, 0, true);     // mur horizontale
-        definir('|', 7, 3, true);     // mur verticale
-        definir('P', 5, 2, true);     // pilier
-        definir('D', 6, 3, false);    // tapis, décor
+        // ----- Tuiles simples -----
+    // Coordonnées : colonne, ligne dans le tileset
 
-        // ----- Objets multi-tuiles : nom, colonne, ligne, largeur, hauteur, bloquant -----
-        definirObjet("table", 10, 2, 2, 2, true);   // EXEMPLE : à ajuster avec OutilTileset
+    definir('.', 1, 3, false);  // Sol en pierre
+    definir('#', 7, 5, true);   // Mur en pierre
+    definir('~', 0, 5, false);  // Eau
 
-        // ----- Pose des objets : nom, x, y (en cases) -----
-        poser("table", 4, 3);
-        poser("table", 16, 3);
-    }
+    // ----- Objets multi-tuiles -----
+
+    definirObjet("coffre", 4, 3, 1, 1, true);
+    definirObjet("tonneau", 7, 3, 1, 1, true);
+    definirObjet("or", 2, 7, 1, 1, false);
+    definirObjet("cle", 6, 8, 1, 1, false);
+    definirObjet("torche", 7, 7, 1, 1, false);
+    definirObjet("crane", 4, 14, 1, 1, false);
+    definirObjet("grille", 5, 15, 1, 1, true);
+
+    // ----- Objets dans la salle supérieure gauche -----
+
+    poser("coffre", 2, 2);
+    poser("tonneau", 3, 3);
+    poser("or", 3, 4);
+
+    // ----- Objets dans la salle supérieure droite -----
+
+    poser("tonneau", 11, 2);
+    poser("coffre", 11, 4);
+    poser("cle", 9, 8);
+
+    // ----- Couloir central -----
+
+    poser("torche", 5, 9);
+    poser("grille", 6, 11);
+
+    // ----- Salle inférieure gauche -----
+
+    poser("coffre", 2, 15);
+    poser("tonneau", 3, 16);
+    poser("or", 2, 17);
+    poser("torche", 4, 17);
+
+    // ----- Salle inférieure droite -----
+
+    poser("crane", 10, 15);
+    poser("or", 11, 16);
+    poser("coffre", 10, 19);
+    poser("tonneau", 12, 20);
+    
+    }    
 
     // Découpe une tuile du tileset et l'associe à une lettre
     private void definir(char lettre, int colonne, int ligne, boolean bloquant) {
