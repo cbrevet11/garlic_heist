@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
- */
 package garlic_heist;
 
 /**
@@ -12,17 +8,26 @@ public class souris {
 
     private String deplacement;
     private int vie;
-    public double[] nourriture = new double[1];
-    public double[] position = new double[2];
-    public String nom;
+    private double[] nourriture = new double[1];
+    private double[] position = new double[2];
+    private Objets[] nourrituresouris = new Objets[1];
+    private String nom;
+    private Bot bot;
+    private Objets nourritures;
+    private Objets positionobj;
 
     public souris() {
-        this.deplacement = deplacement;
-        this.nourriture = nourriture;
         this.vie = 3;
-        this.position = position;
-        this.nom = nom;
+        this.position = new double[]{0.0, 0.0}; // Initialisation propre de la position
+        this.nom = "Souris";
+    }
 
+    public double[] getposition() {
+        return position;
+    }
+
+    public String getnom() {
+        return nom;
     }
 
     public void deplacementhaut() {
@@ -34,33 +39,46 @@ public class souris {
     }
 
     public void deplacementgauche() {
-        this.position[1] = this.position[0] + 1;
+        this.position[0] = this.position[0] - 1;
     }
 
     public void deplacementdroite() {
-        this.position[1] = this.position[0] - 1;
+        this.position[0] = this.position[0] + 1;
     }
 
     public void mort_souris() {
-        if (this.vie == 0) {
+        if (this.vie <= 0) {
             System.out.println("la souris est morte");
         }
     }
-    
+
+    public void perte_vie(Bot botEnnemi) {
+        double[] posBot = botEnnemi.getposition();
+        if (Math.abs(this.position[0] - posBot[0]) + Math.abs(this.position[1] - posBot[1]) == 1) {
+            this.vie = this.vie - 1;
+            if (this.vie < 0) {
+                this.vie = 0;
+            }
+            mort_souris();
+        }
+    }
+
+    public void recuperation_objet(Objets mesObjets) {
+        // Récupère toutes les nourritures gérées par la classe Objets
+        double[][] toutesLesNourritures = mesObjets.getNourritures();
+
+        if (toutesLesNourritures != null) {
+            for (int i = 0; i < toutesLesNourritures.length; i++) {
+                double[] posobjets = toutesLesNourritures[i];
+
+                // Si l'objet n'est pas déjà ramassé (!= -1) et que la souris est sur sa case
+                if (posobjets[0] != -1 && this.position[0] == posobjets[0] && this.position[1] == posobjets[1]) {
+                    // On met les coordonnées à -1 pour qu'il disparaisse de la grille
+                    posobjets[0] = -1;
+                    posobjets[1] = -1;
+                    System.out.println("Nourriture récupérée !");
+                }
+            }
+        }
+    }
 }
-/*
-    public void perte_vie(){
-    if (Math.abs(this.position[0] - position.BOTS[0]) 
-            + Math.abs(this.position[1] - position.BOTS[1]) == 1){
-        this.vie=this.vie-1;
-    }
- */
-
-
-
-     /*
-    public void recuperation_objet(){
-       if(len(nourriture=[])=0) and position.nourriture[]=position.souris
-            this.nourriture[1]=nourriture
-    }
-    */

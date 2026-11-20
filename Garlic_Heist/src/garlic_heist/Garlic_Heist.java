@@ -22,11 +22,11 @@ public class Garlic_Heist extends JFrame implements ActionListener{
     public Garlic_Heist() {
         // initialisation de la fenetre
         this.setTitle("TileMupping");
-        this.setSize(800, 429);
+        this.setSize(768, 448);
         this.setResizable(false);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.jLabel1 = new JLabel();
-        this.jLabel1.setPreferredSize(new java.awt.Dimension(800, 429));
+        this.jLabel1.setPreferredSize(new java.awt.Dimension(768, 448));
         this.setContentPane(this.jLabel1);
         this.pack();
 
@@ -56,8 +56,12 @@ public class Garlic_Heist extends JFrame implements ActionListener{
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        
+        // affichage fenêtre de jeu
         Garlic_Heist fenetre = new Garlic_Heist();
         fenetre.setVisible(true);
+        
+        
         souris s =new souris();
         
         
