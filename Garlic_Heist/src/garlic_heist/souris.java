@@ -12,9 +12,9 @@ public class souris {
 
     private String deplacement;
     private int vie;
-    private double[] nourriture = new double[1];
-    private double[] position = new double[2];
-    private String nom;
+    public double[] nourriture = new double[1];
+    public double[] position = new double[2];
+    public String nom;
 
     public souris() {
         this.deplacement = deplacement;
@@ -46,6 +46,7 @@ public class souris {
             System.out.println("la souris est morte");
         }
     }
+    
 }
 /*
     public void perte_vie(){

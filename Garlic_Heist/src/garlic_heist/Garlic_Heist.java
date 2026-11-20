@@ -19,7 +19,6 @@ public class Garlic_Heist extends JFrame implements ActionListener{
     private JLabel jLabel1;
 
 
-
     public Garlic_Heist() {
         // initialisation de la fenetre
         this.setTitle("TileMupping");
@@ -59,6 +58,8 @@ public class Garlic_Heist extends JFrame implements ActionListener{
     public static void main(String[] args) {
         Garlic_Heist fenetre = new Garlic_Heist();
         fenetre.setVisible(true);
+        souris s =new souris();
     }
+    
 
 }
