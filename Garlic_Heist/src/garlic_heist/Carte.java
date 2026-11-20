@@ -13,24 +13,23 @@ import javax.imageio.ImageIO;
 
 public class Carte {
 
-    public static final int TAILLE = 32;
+    public static final int TAILLE = 42;
 
     // Le plan : une lettre = un type de tuile
     private static final String[] PLAN = {
-        "########################",
-        "#..........##..........#",
-        "#..TT......##..TT......#",
-        "#..........##..........#",
-        "#......PP..##......PP..#",
-        "#....D.....##....D.....#",
-        "########################",
-        "########################",
-        "#..........##..........#",
-        "#..TT......##..TT......#",
-        "#..........##..........#",
-        "#......PP..##......PP..#",
-        "#....D.....##....D.....#",
-        "########################"
+        "------------------------",
+        "|..........|...........|",
+        "|..........|...........|",
+        "|..........|...........|",
+        "|..........|...........|",
+        "|..........|...........|",
+        "------------------------",
+        "|..........|...........|",
+        "|..........|...........|",
+        "|..........|...........|",
+        "|..........|...........|",
+        "|..........|...........|",
+        "------------------------"
     };
 
     // Un modèle d'objet : un rectangle découpé dans le tileset
@@ -69,16 +68,15 @@ public class Carte {
 
         try {
             tileset = ImageIO.read(
-                getClass().getClassLoader().getResource("resources/tileset_chateau.png"));
+                getClass().getClassLoader().getResource("resources/tileset_42.png"));
         } catch (Exception e) {
             System.out.println("Impossible de charger le tileset : " + e);
         }
 
         // ----- Tuiles simples : lettre, colonne, ligne, bloque le passage ? -----
         definir('.', 13, 3, false);   // sol
-        definir('#', 1, 0, true);     // mur horizontale
-        definir('#', 1, 0, true);     // mur verticale
-        definir('T', 3, 1, true);     // table
+        definir('-', 1, 0, true);     // mur horizontale
+        definir('|', 7, 3, true);     // mur verticale
         definir('P', 5, 2, true);     // pilier
         definir('D', 6, 3, false);    // tapis, décor
 
@@ -224,7 +222,7 @@ public class Carte {
     // Renvoie le caractère présent sur une case
     public char getCase(int x, int y) {
         if (x < 0 || y < 0 || x >= nbColonnes || y >= nbLignes) {
-            return '#';
+            return '|';
         }
         return cases[y][x];
     }
