@@ -16,31 +16,29 @@ public class Carte {
     public static final int TAILLE = 42;
 
     // Le plan : une lettre = un type de tuile
+
     private static final String[] PLAN = {
-        "##############",
-        "#....##......#",
-        "#....##..~~..#",
-        "#....##..~~..#",
-        "#............#",
-        "#....##..~~..#",
-        "######..~~...#",
-        "#....#...~~..#",
-        "#....#...~~..#",
-        "#....#.......#",
-        "######..######",
-        "....##..##....",
-        "....##..##....",
-        "######..######",
-        "#....#.......#",
-        "#....#..##...#",
-        "#....#..##...#",
-        "#....#.......#",
-        "######..######",
-        "#............#",
-        "#............#",
-        "#............#",
-        "##############"
+        "#~~~~~~~###########~~~~~~~###",
+        "#.......###########.......###",
+        "#############################",
+        "#....####...........####....#",
+        "#....#..#...........#..#....#",
+        "#....#..#...........#..#....#",
+        "######..#############..######",
+        "#....#...................#..#",
+        "#....#...................#..#",
+        "######....#########....######",
+        "..........#.......#..........",
+        "..........#..~~~..#..........",
+        "###########..~~~..###########",
+        "#.........#..~~~..#.........#",
+        "#.........#..~~~..#.........#",
+        "#.........#..~~~..#.........#",
+        "###########..~~~..###########",
+        "#############################",
+        "#############################"
     };
+
 
     // Un modèle d'objet : un rectangle découpé dans le tileset
     private static class Modele {
@@ -86,50 +84,66 @@ public class Carte {
         // ----- Tuiles simples -----
     // Coordonnées : colonne, ligne dans le tileset
 
-    definir('.', 1, 3, false);  // Sol en pierre
-    definir('#', 7, 5, true);   // Mur en pierre
-    definir('~', 0, 5, false);  // Eau
+    // SOL, MURS ET EAU
+    definir('.', 1, 3, false);
+    definir('#', 7, 5, true);
+    definir('~', 0, 5, false);
 
-    // ----- Objets multi-tuiles -----
-
+    // OBJETS DECORATIFS
     definirObjet("coffre", 4, 3, 1, 1, true);
     definirObjet("tonneau", 7, 3, 1, 1, true);
     definirObjet("or", 2, 7, 1, 1, false);
     definirObjet("cle", 6, 8, 1, 1, false);
-    definirObjet("torche", 7, 7, 1, 1, false);
-    definirObjet("crane", 4, 14, 1, 1, false);
-    definirObjet("grille", 5, 15, 1, 1, true);
+    definirObjet("crane", 0, 7, 1, 1, false);
+    definirObjet("grille", 4, 7, 1, 1, true);
+    definirObjet("torche", 7, 8, 1, 1, false);
+    definirObjet("banniere", 6, 5, 1, 1, false);
+    definirObjet("colonne", 2, 2, 1, 1, true);
+    definirObjet("levier", 3, 6, 1, 1, false);
 
-    // ----- Objets dans la salle supérieure gauche -----
+    // SALLE SUPERIEURE GAUCHE
+    poser("crane", 1, 7);
+    poser("colonne", 2, 4);
+    poser("colonne", 4, 4);
+    poser("torche", 3, 5);
 
-    poser("coffre", 2, 2);
-    poser("tonneau", 3, 3);
-    poser("or", 3, 4);
+    // SALLE SUPERIEURE DROITE
+    poser("coffre", 23, 7);
+    poser("or", 23, 8);
+    poser("colonne", 24, 4);
+    poser("torche", 25, 5);
 
-    // ----- Objets dans la salle supérieure droite -----
+    // GRANDE PORTE CENTRALE
+    poser("banniere", 11, 3);
+    poser("banniere", 17, 3);
+    poser("levier", 12, 8);
 
-    poser("tonneau", 11, 2);
-    poser("coffre", 11, 4);
-    poser("cle", 9, 8);
+    // SALLE INFERIEURE GAUCHE
+    poser("banniere", 2, 13);
+    poser("colonne", 3, 13);
+    poser("colonne", 6, 13);
+    poser("coffre", 2, 14);
+    poser("tonneau", 3, 15);
+    poser("cle", 5, 14);
+    poser("grille", 2, 16);
+    poser("torche", 8, 14);
 
-    // ----- Couloir central -----
+    // SALLE INFERIEURE DROITE
+    poser("banniere", 23, 13);
+    poser("colonne", 22, 13);
+    poser("colonne", 25, 13);
+    poser("tonneau", 25, 15);
+    poser("tonneau", 26, 15);
+    poser("grille", 20, 16);
+    poser("grille", 25, 16);
+    poser("or", 23, 14);
 
-    poser("torche", 5, 9);
-    poser("grille", 6, 11);
+    // CENTRE DU DONJON
+    poser("grille", 13, 10);
+    poser("grille", 14, 10);
+    poser("tonneau", 10, 10);
+    poser("grille", 12, 16);
 
-    // ----- Salle inférieure gauche -----
-
-    poser("coffre", 2, 15);
-    poser("tonneau", 3, 16);
-    poser("or", 2, 17);
-    poser("torche", 4, 17);
-
-    // ----- Salle inférieure droite -----
-
-    poser("crane", 10, 15);
-    poser("or", 11, 16);
-    poser("coffre", 10, 19);
-    poser("tonneau", 12, 20);
     
     }    
 
