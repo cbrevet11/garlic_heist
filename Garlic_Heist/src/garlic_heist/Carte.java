@@ -218,4 +218,12 @@ public class Carte {
         }
         return cases[y][x];
     }
+    
+    public int getNbLignes() {
+        return nbLignes;
+    }
+    
+    public int getNbColonnes() {
+        return nbColonnes;
+    }
 }

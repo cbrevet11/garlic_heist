@@ -18,6 +18,9 @@ public class Testsouris {
         souris maSouris = new souris();
         Objets mesObjets = new Objets();
 
+        // Lettres distinctes pour les 3 objets (index 0, 1, 2)
+        char[] lettresObjets = {'A', 'B', 'C'};
+
         // Inventaire géré uniquement dans le test
         List<String> inventaireTest = new ArrayList<>();
 
@@ -25,6 +28,7 @@ public class Testsouris {
         boolean enJeu = true;
 
         System.out.println("=== TEST DE LA MAP : SOURIS & OBJETS ===");
+        System.out.println("Objets : A (0), B (1), C (2) | Souris : M");
         System.out.println("Commandes : z (haut), s (bas), q (gauche), d (droite), exit (quitter)");
 
         while (enJeu) {
@@ -45,7 +49,7 @@ public class Testsouris {
                     for (int i = 0; i < toutesLesNourritures.length; i++) {
                         double[] posNourriture = toutesLesNourritures[i];
                         if (posNourriture[0] != -1 && (int) posNourriture[0] == x && (int) posNourriture[1] == y) {
-                            symbole = 'O';
+                            symbole = lettresObjets[i];
                         }
                     }
 
@@ -55,7 +59,7 @@ public class Testsouris {
             }
             System.out.println("--------------------------------");
 
-            // --- AFFICHAGE DE L'INVENTAIRE : inventaire [] / inventaire [O] ---
+            // --- AFFICHAGE DE L'INVENTAIRE : inventaire [A, B] ---
             System.out.println("inventaire [" + String.join(", ", inventaireTest) + "]");
 
             // --- SAISIE DU MOUVEMENT ---
@@ -79,7 +83,7 @@ public class Testsouris {
                 continue;
             }
 
-            // --- DÉTECTION DE RÉCUPÉRATION SANS MODIFIER SOURIS / OBJETS ---
+            // --- DÉTECTION DE RÉCUPÉRATION ET PLACEMENT ALÉATOIRE ---
             double[][] nourrituresAvant = mesObjets.getNourritures();
             double[][] etatAvant = new double[nourrituresAvant.length][2];
             for (int i = 0; i < nourrituresAvant.length; i++) {
@@ -90,10 +94,16 @@ public class Testsouris {
             maSouris.recuperation_objet(mesObjets);
 
             double[][] nourrituresApres = mesObjets.getNourritures();
+            boolean unObjetRamasse = false;
             for (int i = 0; i < nourrituresApres.length; i++) {
                 if (etatAvant[i][0] != -1 && nourrituresApres[i][0] == -1) {
-                    inventaireTest.add("O");
+                    inventaireTest.add(String.valueOf(lettresObjets[i]));
+                    unObjetRamasse = true;
                 }
+            }
+
+            if (unObjetRamasse) {
+                mesObjets.nourriturePlacementAleatoire();
             }
         }
 

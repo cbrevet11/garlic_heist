@@ -4,7 +4,7 @@ package garlic_heist;
 
 /**
  *
- * @author vdaviet est un benet
+ * @author vdaviet 
  */
 public class souris {
 
@@ -17,13 +17,20 @@ public class souris {
     private Bot bot;
     private Objets nourritures;
     private Objets positionobj;
+    private double spawnX;
+    private double spawnY;
 
     public souris() {
         this.vie = 3;
         this.position = new double[]{0.0, 0.0}; // Initialisation propre de la position
         this.nom = "Souris";
+        this.spawnX = position[0]; 
+        this.spawnY = position[1];
     }
-
+    public void retournerAuSpawn() {
+        this.position[0] = spawnX;
+        this.position[1] = spawnY;
+}
     public double[] getposition() {
         return position;
     }
