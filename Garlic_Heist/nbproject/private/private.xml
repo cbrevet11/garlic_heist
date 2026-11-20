@@ -3,9 +3,14 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/Z:/Documents/vert/info/projet%20jeu/garlic_heist/Garlic_Heist/src/garlic_heist/BOTS.java</file>
-            <file>file:/Z:/Documents/vert/info/projet%20jeu/garlic_heist/Garlic_Heist/src/garlic_heist/souris.java</file>
-            <file>file:/Z:/Documents/vert/info/projet%20jeu/garlic_heist/Garlic_Heist/src/garlic_heist/Plateau.java</file>
+            <file>file:/Z:/Documents/informatique/garlic_heist/Garlic_Heist/src/garlic_heist/Garlic_Heist.java</file>
+            <file>file:/Z:/Documents/informatique/garlic_heist/Garlic_Heist/src/garlic_heist/souris.java</file>
+            <file>file:/Z:/Documents/informatique/garlic_heist/Garlic_Heist/src/garlic_heist/Joueur.java</file>
+            <file>file:/Z:/Documents/informatique/garlic_heist/Garlic_Heist/src/garlic_heist/Serveur.java</file>
+            <file>file:/Z:/Documents/informatique/garlic_heist/Garlic_Heist/src/garlic_heist/TestCompletSouris.java</file>
+            <file>file:/Z:/Documents/informatique/garlic_heist/Garlic_Heist/src/garlic_heist/TestInteractifSouris.java</file>
+            <file>file:/Z:/Documents/informatique/garlic_heist/Garlic_Heist/src/garlic_heist/TestJoueur.java</file>
+            <file>file:/Z:/Documents/informatique/garlic_heist/Garlic_Heist/src/garlic_heist/TestGrilleSouris.java</file>
         </group>
     </open-files>
 </project-private>
