@@ -15,11 +15,11 @@ import javax.swing.JScrollPane;
 public class OutilTileset {
 
     public static void main(String[] args) throws Exception {
-        final int taille = 32;
+        final int taille = 42;
         final int zoom = 2;   // agrandit l'image pour mieux lire
 
         BufferedImage tileset = ImageIO.read(
-            OutilTileset.class.getClassLoader().getResource("resources/tileset_chateau.png"));
+            OutilTileset.class.getClassLoader().getResource("resources/tileset_42.png"));
 
         BufferedImage vue = new BufferedImage(
             tileset.getWidth() * zoom, tileset.getHeight() * zoom, BufferedImage.TYPE_INT_ARGB);
