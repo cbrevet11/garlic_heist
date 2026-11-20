@@ -38,10 +38,17 @@ public class Bot {
     }
     
     private EtatBot etatActuel = EtatBot.PATROUILLE;
+    private Random random = new Random();
     
+    // Pour mémoriser le dernier point avant la poursuite
+    private int dernierPointX, dernierPointY;
+    
+    
+    // --------------------------------------------------------
+    //              SETTER/GETTER
+    // --------------------------------------------------------
     
     // recupere ou change la direction du regard du bot 
-    
     public void setDirection(String direction){
         this.direction = direction;
     }
@@ -68,21 +75,91 @@ public class Bot {
     }
     
     
+    // --------------------------------------------------------
+    //              DEPLACEMENT DU BOT
+    // --------------------------------------------------------
     
     
+    public void agir(Carte carte, souris souris) {
     
-    public boolean deplacerVers(Carte carte, int destinationX,int destinationY) {
-
-        chemin = carte.trouverChemin(x, y, destinationX, destinationY);
-        prochaineEtape = 0;
-        
-        if (chemin.isEmpty()
-            && (x != destinationX || y != destinationY)) {
-        return false;
+        // Transition vers la poursuite si on patrouille et qu'on détecte la souris
+        if (etatActuel == EtatBot.PATROUILLE && detecterZone(souris.getPositionX(), souris.getPositionY())) {
+            etatActuel = EtatBot.POURSUITE;
+            dernierPointX = x;
+            dernierPointY = y;
         }
-        return true;
+
+        // Gestion des états 
+        if (etatActuel == EtatBot.PATROUILLE) {
+            if (chemin == null || prochaineEtape >= chemin.size()) {
+                newDestinationAleatoire(carte);
+            } else {
+                avancer();
+            }
+        } 
+        else if (etatActuel == EtatBot.POURSUITE) {
+            if (detecterZone(souris.getPositionX(), souris.getPositionY())) {
+                // Si le bot l'a attrapée
+                if (Math.abs(souris.getPositionX() - x) <= 1 && Math.abs(souris.getPositionY() - y) <= 1) {
+                    attaque(); 
+                    etatActuel = EtatBot.RETOUR; 
+                    deplacerVers(carte, dernierPointX, dernierPointY); 
+                } 
+                else {
+                    // Poursuit la souris en temps réel
+                    deplacerVers(carte, souris.getPositionX(), souris.getPositionY());
+                    avancer();
+                }
+            } 
+            else {
+                // Souris perdue de vue, on retourne au point de départ
+                etatActuel = EtatBot.RETOUR;
+                deplacerVers(carte, dernierPointX, dernierPointY);
+            }
+        } 
+        else if (etatActuel == EtatBot.RETOUR) {
+            if (chemin == null || prochaineEtape >= chemin.size()) {
+                etatActuel = EtatBot.PATROUILLE;
+            } 
+            else {
+                avancer();
+            }
+        }
     }
+    private void newDestinationAleatoire(Carte carte) {
+    int maxEssais = 50; 
+    int destX, destY;
+
+    do {
+        // Utilise les dimensions réelles de la carte (24x14)
+        destX = random.nextInt(carte.getNbColonnes()); 
+        destY = random.nextInt(carte.getNbLignes());
+        
+        // Si la case est accessible, on valide cette destination
+        if (carte.caseAccessible(destX, destY)) {
+            deplacerVers(carte, destX, destY);
+            return;
+        }
+        maxEssais--;
+    } while (maxEssais > 0);
+}
     
+    
+    
+    public boolean deplacerVers(Carte carte, int destinationX, int destinationY) {
+        this.chemin = carte.trouverChemin(x, y, destinationX, destinationY);
+        this.prochaineEtape = 0;
+
+        // Sécurité : si le chemin est null ou vide alors qu'on n'est pas déjà sur place
+        if (this.chemin == null || (this.chemin.isEmpty() && (x != destinationX || y != destinationY))) {
+            this.chemin = new ArrayList<>(); // Évite le null
+            this.cheminTrouve = false;
+            return false;
+        }
+
+    this.cheminTrouve = true;
+    return true;
+}
     public boolean avancer() {
 
         if (prochaineEtape >= chemin.size()) {
