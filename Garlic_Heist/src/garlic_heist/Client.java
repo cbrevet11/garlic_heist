@@ -14,7 +14,7 @@ import java.io.IOException;
 public class Client {
     public static void main(String[] args) {
         try {
-            Socket socket = new Socket("172.16.20.85", 12345);
+            Socket socket = new Socket("172.16.20.84", 12345);
 
             System.out.println("Connecté au serveur !");
 
