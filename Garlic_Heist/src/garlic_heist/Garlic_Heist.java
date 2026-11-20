@@ -22,11 +22,11 @@ public class Garlic_Heist extends JFrame implements ActionListener{
     public Garlic_Heist() {
         // initialisation de la fenetre
         this.setTitle("TileMupping");
-        this.setSize(768, 448);
+        this.setSize(1280, 720);
         this.setResizable(false);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.jLabel1 = new JLabel();
-        this.jLabel1.setPreferredSize(new java.awt.Dimension(768, 448));
+        this.jLabel1.setPreferredSize(new java.awt.Dimension(1280, 720));
         this.setContentPane(this.jLabel1);
         this.pack();
 
