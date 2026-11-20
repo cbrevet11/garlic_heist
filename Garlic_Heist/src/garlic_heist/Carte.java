@@ -89,61 +89,6 @@ public class Carte {
     definir('|', 7, 5, true);
     definir('~', 0, 5, false);
 
-    // OBJETS DECORATIFS
-    definirObjet("coffre", 4, 3, 1, 1, true);
-    definirObjet("tonneau", 7, 3, 1, 1, true);
-    definirObjet("or", 2, 7, 1, 1, false);
-    definirObjet("cle", 6, 8, 1, 1, false);
-    definirObjet("crane", 0, 7, 1, 1, false);
-    definirObjet("grille", 4, 7, 1, 1, true);
-    definirObjet("torche", 7, 8, 1, 1, false);
-    definirObjet("banniere", 6, 5, 1, 1, false);
-    definirObjet("colonne", 2, 2, 1, 1, true);
-    definirObjet("levier", 3, 6, 1, 1, false);
-
-    // SALLE SUPERIEURE GAUCHE
-    poser("crane", 4, 14);
-    poser("colonne", 2, 4);
-    poser("colonne", 4, 4);
-    poser("torche", 3, 5);
-
-    // SALLE SUPERIEURE DROITE
-    poser("coffre", 23, 7);
-    poser("or", 23, 8);
-    poser("colonne", 24, 4);
-    poser("torche", 25, 5);
-
-    // GRANDE PORTE CENTRALE
-    poser("banniere", 11, 3);
-    poser("banniere", 17, 3);
-    poser("levier", 12, 8);
-
-    // SALLE INFERIEURE GAUCHE
-    poser("banniere", 2, 13);
-    poser("colonne", 3, 13);
-    poser("colonne", 6, 13);
-    poser("coffre", 2, 14);
-    poser("tonneau", 3, 15);
-    poser("cle", 5, 14);
-    poser("grille", 2, 16);
-    poser("torche", 8, 14);
-
-    // SALLE INFERIEURE DROITE
-    poser("banniere", 23, 13);
-    poser("colonne", 22, 13);
-    poser("colonne", 25, 13);
-    poser("tonneau", 25, 15);
-    poser("tonneau", 26, 15);
-    poser("grille", 20, 16);
-    poser("grille", 25, 16);
-    poser("or", 23, 14);
-
-    // CENTRE DU DONJON
-    poser("grille", 13, 10);
-    poser("grille", 14, 10);
-    poser("tonneau", 10, 10);
-    poser("grille", 12, 16);
-
     
     }    
 
@@ -154,18 +99,6 @@ public class Carte {
         if (bloquant) {
             bloquants.add(lettre);
         }
-    }
-
-    // colonne, ligne = coin haut-gauche dans le tileset ; largeur, hauteur en tuiles
-    private void definirObjet(String nom, int colonne, int ligne,
-                              int largeur, int hauteur, boolean bloquant) {
-        Modele m = new Modele();
-        m.image = tileset.getSubimage(colonne * TAILLE, ligne * TAILLE,
-                                      largeur * TAILLE, hauteur * TAILLE);
-        m.largeur = largeur;
-        m.hauteur = hauteur;
-        m.bloquant = bloquant;
-        modeles.put(nom, m);
     }
 
     // Pose un objet sur la carte (x, y = case du coin haut-gauche)
