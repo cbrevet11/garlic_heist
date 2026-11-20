@@ -77,6 +77,10 @@ public class Bot {
         this.y = y;
     }
     
+    public double[] getposition(){
+        return new double[]{this.x, this.y};
+    }
+    
     
     // --------------------------------------------------------
     //              DEPLACEMENT DU BOT
