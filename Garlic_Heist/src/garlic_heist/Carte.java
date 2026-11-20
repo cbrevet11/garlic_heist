@@ -62,12 +62,12 @@ public class Carte {
     private int hauteur = 9;
     private int tailleTuile = 32;
     
-    private BufferedImage uneTuile;
+    private BufferedImage sol;
 
     public Carte() {
         try {
             BufferedImage tileset = ImageIO.read(getClass().getClassLoader().getResource("resources/tileset_chateau.png"));
-            uneTuile = tileset.getSubimage(50, 0, tailleTuile, tailleTuile);
+            sol = tileset.getSubimage(8*32, 4*32, tailleTuile, tailleTuile);
         } catch (IOException ex) {
             Logger.getLogger(Carte.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -81,7 +81,7 @@ public class Carte {
         
         for (int x = 0; x<largeur;x++ ){
             for (int y = 0; y<hauteur; y++){
-                contexte.drawImage(uneTuile, x, y, null);
+                contexte.drawImage(sol, x*tailleTuile, y*tailleTuile, null);
             }
         }
     }
