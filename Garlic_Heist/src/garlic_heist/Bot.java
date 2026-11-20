@@ -4,6 +4,9 @@
  */
 package garlic_heist;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 /**
  *
  * @author achainel
@@ -28,7 +31,13 @@ public class Bot {
         this.direction = "droite";
     }
     
+    public enum EtatBot {
+        PATROUILLE,
+        POURSUITE,
+        RETOUR
+    }
     
+    private EtatBot etatActuel = EtatBot.PATROUILLE;
     
     
     // recupere ou change la direction du regard du bot 
