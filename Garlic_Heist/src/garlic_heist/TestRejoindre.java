@@ -9,7 +9,7 @@ public class TestRejoindre {
 
     public static void main(String[] args) {
 
-        Joueur joueur2 = new Joueur("Joueur2", 2);
+        Joueur joueur2 = new Joueur("Joueur2", 3);
 
         System.out.println("Joueur2 connecté à la partie 2 !");
 
