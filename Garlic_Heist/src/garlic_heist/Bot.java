@@ -21,6 +21,8 @@ public class Bot {
     private ArrayList<int[]> chemin;
     private int prochaineEtape;
     private boolean cheminTrouve;
+    private boolean estBloque = false;
+    private long finBlocageTimestamp = 0;
     
         
     public Bot(String nom, int posX, int posY, double vitesse){
@@ -34,7 +36,8 @@ public class Bot {
     public enum EtatBot {
         PATROUILLE,
         POURSUITE,
-        RETOUR
+        RETOUR,
+        TOURNE
     }
     
     private EtatBot etatActuel = EtatBot.PATROUILLE;
@@ -81,7 +84,13 @@ public class Bot {
     
     
     public void agir(Carte carte, souris souris) {
-    
+        
+        piegeAil(carte);// 1. On vérifie d'abord s'il y a un piège à ail sous ses pieds
+
+        
+        if (estBloque) {// 2. S'il est bloqué par l'ail, il ne fait rien de ce tour
+            return; 
+        }
         // Transition vers la poursuite si on patrouille et qu'on détecte la souris
         if (etatActuel == EtatBot.PATROUILLE && detecterZone(souris.getPositionX(), souris.getPositionY())) {
             etatActuel = EtatBot.POURSUITE;
@@ -101,7 +110,7 @@ public class Bot {
             if (detecterZone(souris.getPositionX(), souris.getPositionY())) {
                 // Si le bot l'a attrapée
                 if (Math.abs(souris.getPositionX() - x) <= 1 && Math.abs(souris.getPositionY() - y) <= 1) {
-                    attaque(); 
+                    attaque(souris); 
                     etatActuel = EtatBot.RETOUR; 
                     deplacerVers(carte, dernierPointX, dernierPointY); 
                 } 
@@ -192,14 +201,28 @@ public class Bot {
         return true;
     }
     
-    public void attaque(){
-        
+    public void attaque(souris souris){
+        souris.retournerAuSpawn();
     }
     
-    public void piegeAil(){
-       
+    public void piegeAil(Carte carte) {
+        // Si le bot est déjà bloqué, on vérifie si les 2 secondes sont écoulées
+        if (estBloque) {
+            if (System.currentTimeMillis() >= finBlocageTimestamp) {
+                estBloque = false; // Le blocage est terminé
+            }
+            return; // Tant qu'il est bloqué, il ne fait rien d'autre
+        }
+
+        // Si la case actuelle contient de l'ail ('A')
+        if (carte.getCase(x, y) == 'A') {
+            estBloque = true;
+            finBlocageTimestamp = System.currentTimeMillis() + 2000; // Bloqué pendant 2000 ms (2 secondes)
+            System.out.println(nom + " a marché sur de l'ail et est bloqué !");
+        }
     }
     
+   
     public boolean detecterZone(int sourisX, int sourisY) {
         
         int distanceX = sourisX - x;
@@ -256,17 +279,4 @@ public class Bot {
         if (Math.abs(distanceX1) <= 5 && Math.abs(distanceY1) <= 5 || Math.abs(distanceX2) <= 5 && Math.abs(distanceY2) <= 5 || Math.abs(distanceX3) <= 5 && Math.abs(distanceY3) <= 5 || Math.abs(distanceX4) <= 5 && Math.abs(distanceY4) <= 5) {
         }
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 }
