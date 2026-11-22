@@ -17,8 +17,8 @@ public class Garlic_Heist extends JFrame implements ActionListener {
     // Taille "logique" du jeu = taille de la carte (29 colonnes x 17 lignes de tuiles).
     // Le jeu dessine toujours dans cette zone, ensuite elle est agrandie ou
     // réduite pour remplir la fenêtre. Garde tous tes niveaux à cette taille.
-    public static final int LARGEUR = 29 * Carte.TAILLE;
-    public static final int HAUTEUR = 17 * Carte.TAILLE;
+    public static final int LARGEUR = 38 * Carte.TAILLE;
+    public static final int HAUTEUR = 20 * Carte.TAILLE;
 
     private BufferedImage buffer;
     private Graphics2D contexteBuffer;
