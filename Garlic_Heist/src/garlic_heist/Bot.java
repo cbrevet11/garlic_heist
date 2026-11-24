@@ -260,46 +260,46 @@ public class Bot {
     
    
     public boolean detecterZone(int sourisX, int sourisY) {
-        int distanceX = sourisX - x;
-        int distanceY = sourisY - y;
+    int distanceX = sourisX - x;
+    int distanceY = sourisY - y;
 
-        // Si le bot est déjà en train de le poursuivre, on élargit énormément la zone (ex: 12 cases de portée)
-        int portee = (etatActuel == EtatBot.POURSUITE) ? 12 : 7;
-        int porteeArriere = (etatActuel == EtatBot.POURSUITE) ? 6 : 3;
+    // Portée adaptée selon l'état du bot
+    int portee = (etatActuel == EtatBot.POURSUITE) ? 8 : 7;
+    int porteeArriere = (etatActuel == EtatBot.POURSUITE) ? 4 : 3;
 
-        boolean autour = Math.abs(distanceX) <= 3 && Math.abs(distanceY) <= 3;
+    boolean autour = Math.abs(distanceX) <= 3 && Math.abs(distanceY) <= 3;
 
-        boolean champDeVision = false;
+    boolean champDeVision = false;
 
-        if (direction.equals("haut")) {
-            champDeVision = (distanceY >= -portee && distanceY <= -1) && (Math.abs(distanceX) <= (portee / 2));
-        }
-        else if (direction.equals("bas")) {
-            champDeVision = (distanceY >= 1 && distanceY <= portee) && (Math.abs(distanceX) <= (portee / 2));
-        }
-        else if (direction.equals("gauche")) {
-            champDeVision = (distanceX >= -portee && distanceX <= -1) && (Math.abs(distanceY) <= (portee / 2));
-        }
-        else if (direction.equals("droite")) {
-            champDeVision = (distanceX >= 1 && distanceX <= portee) && (Math.abs(distanceY) <= (portee / 2));
-        }
-
-        boolean visionArriere = false;
-        if (direction.equals("haut")) {
-            visionArriere = (distanceY >= 1 && distanceY <= porteeArriere) && (Math.abs(distanceX) <= 2);
-        }
-        else if (direction.equals("bas")) {
-            visionArriere = (distanceY >= -porteeArriere && distanceY <= -1) && (Math.abs(distanceX) <= 2);
-        }
-        else if (direction.equals("gauche")) {
-            visionArriere = (distanceX >= 1 && distanceX <= porteeArriere) && (Math.abs(distanceY) <= 2);
-        }
-        else if (direction.equals("droite")) {
-            visionArriere = (distanceX >= -porteeArriere && distanceX <= -1) && (Math.abs(distanceY) <= 2);
-        }
-
-        return autour || champDeVision || visionArriere;
+    if (direction.equals("haut")) {
+        champDeVision = (distanceY >= -portee && distanceY <= -1) && (Math.abs(distanceX) <= (portee / 2));
     }
+    else if (direction.equals("bas")) {
+        champDeVision = (distanceY >= 1 && distanceY <= portee) && (Math.abs(distanceX) <= (portee / 2));
+    }
+    else if (direction.equals("gauche")) {
+        champDeVision = (distanceX >= -portee && distanceX <= -1) && (Math.abs(distanceY) <= (portee / 2));
+    }
+    else if (direction.equals("droite")) {
+        champDeVision = (distanceX >= 1 && distanceX <= portee) && (Math.abs(distanceY) <= (portee / 2));
+    }
+
+    boolean visionArriere = false;
+    if (direction.equals("haut")) {
+        visionArriere = (distanceY >= 1 && distanceY <= porteeArriere) && (Math.abs(distanceX) <= 2);
+    }
+    else if (direction.equals("bas")) {
+        visionArriere = (distanceY >= -porteeArriere && distanceY <= -1) && (Math.abs(distanceX) <= 2);
+    }
+    else if (direction.equals("gauche")) {
+        visionArriere = (distanceX >= 1 && distanceX <= porteeArriere) && (Math.abs(distanceY) <= 2);
+    }
+    else if (direction.equals("droite")) {
+        visionArriere = (distanceX >= -porteeArriere && distanceX <= -1) && (Math.abs(distanceX) <= 2);
+    }
+
+    return autour || champDeVision || visionArriere;
+}
     
     
     public void tour(){
