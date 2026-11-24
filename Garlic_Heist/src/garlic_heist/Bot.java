@@ -32,7 +32,19 @@ public class Bot {
         this.vitesse = vitesse;
         this.direction = "droite";
     }
+    private int[][] pointsPatrouille = {
+        {7, 5},   // Point 1 
+        {8, 16},  // Point 2 
+        {12, 29}, // Point 3 
+        {15, 18},   // Point 4 
+        {21, 18},   // Point 5
+        {7, 28}   // Point 6
+    };
     
+    
+    private int indexPointActuel = 0;
+    
+   
     public enum EtatBot {
         PATROUILLE,
         POURSUITE,
@@ -105,7 +117,7 @@ public class Bot {
         // Gestion des états 
         if (etatActuel == EtatBot.PATROUILLE) {
             if (chemin == null || prochaineEtape >= chemin.size()) {
-                newDestinationAleatoire(carte);
+                prochaineDestinationPatrouille(carte);
             } else {
                 avancer();
             }
@@ -139,25 +151,24 @@ public class Bot {
             }
         }
     }
-    private void newDestinationAleatoire(Carte carte) {
-    int maxEssais = 50; 
-    int destX, destY;
-
-    do {
-        // Utilise les dimensions réelles de la carte (24x14)
-        destX = random.nextInt(carte.getNbColonnes()); 
-        destY = random.nextInt(carte.getNbLignes());
-        
-        // Si la case est accessible, on valide cette destination
-        if (carte.caseAccessible(destX, destY)) {
-            deplacerVers(carte, destX, destY);
+    
+    private void prochaineDestinationPatrouille(Carte carte) {
+        if (pointsPatrouille.length == 0){
             return;
         }
-        maxEssais--;
-    } while (maxEssais > 0);
-}
-    
-    
+
+            // Récupère les coordonnées X et Y du point actuel dans le tableau
+            int destX = pointsPatrouille[indexPointActuel][0];
+            int destY = pointsPatrouille[indexPointActuel][1];
+
+            // Passe au point suivant du tableau pour la prochaine fois 
+            // (le modulo '%' permet de revenir à 0 automatiquement quand on arrive à la fin du tableau)
+            indexPointActuel = (indexPointActuel + 1) % pointsPatrouille.length;
+
+            // Demande au bot de se déplacer vers ce point
+            deplacerVers(carte, destX, destY);
+    }
+
     
     public boolean deplacerVers(Carte carte, int destinationX, int destinationY) {
         this.chemin = carte.trouverChemin(x, y, destinationX, destinationY);
