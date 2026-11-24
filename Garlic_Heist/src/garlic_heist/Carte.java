@@ -97,6 +97,7 @@ public class Carte {
         nbColonnes = plan[0].length();
         cases = new char[nbLignes][nbColonnes];
         occupe = new boolean[nbLignes][nbColonnes];
+        
         for (int y = 0; y < nbLignes; y++) {
             if (plan[y].length() != nbColonnes) {
                 throw new IllegalArgumentException("Niveau " + numeroNiveau
@@ -119,24 +120,24 @@ public class Carte {
         // SOL, MURS ET EAU
         definir('.', 7, 1, false);   // sol château
         definir('|', 6, 0, true);    // mur 
-        definir('~', 5, 0, false);   // eau
+        definir('~', 5, 0, true);   // eau
 
         // AUTRES SOLS ET PIÈGES
-        definir('<', 2, 1, false);   // mur exté gauche
-        definir('>', 1, 1, false);   // mur exté droit
-        definir('[', 7, 0, false);   // mur exté haut
-        definir(']', 0, 1, false);   // mur exté bas
-        definir('>', 5, 1, false);   // mur exté droit
+        definir('<', 2, 1, true);   // mur exté gauche
+        definir('>', 1, 1, true);   // mur exté droit
+        definir('[', 7, 0, true);   // mur exté haut
+        definir(']', 0, 1, true);   // mur exté bas
+        definir('>', 5, 1, true);   // mur exté droit
         definir('p', 5, 1, false);   // pics
         definir('r', 1, 2, false);   // sol rouge
         definir('b', 0, 2, false);   // sol beige
         definir('v', 2, 2, false);   // sol exté
         definir('g', 4, 1, false);   // grille
         definir('p', 5, 1, false);   // pics
-        definir('t', 0, 3, false);   // tonneau
-        definir('b', 0, 0, false);   // Boite
+        definir('t', 0, 3, true);   // tonneau
+        definir('b', 0, 0, true);   // Boite
         definir('s', 3, 0, false);   // scquelette
-        definir('c', 2, 0, false);   // coffre
+        definir('c', 2, 0, true);   // coffre
         definir('a', 4, 2, false);   // table, assiettes
     }
 
@@ -149,6 +150,7 @@ public class Carte {
         }
     }
 
+    
     
     // Partie de Adrien
     
