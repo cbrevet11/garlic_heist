@@ -68,7 +68,7 @@ public class Objets {
             }
         }
         
-        // CORRECTION : On crée un nouveau tableau indépendant pour ne pas corrompre tabPositionpossibleobjet
+        //On crée un nouveau tableau indépendant pour ne pas avoir de probleme avec tabPositionpossibleobjet
         this.nourritures[a] = new double[]{ nouvellePos[0], nouvellePos[1] }; // Attribue la position si tout est libre
     }
 }

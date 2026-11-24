@@ -1,5 +1,3 @@
-
-
 package garlic_heist;
 
 /**
@@ -27,10 +25,12 @@ public class souris {
         this.spawnX = position[0]; 
         this.spawnY = position[1];
     }
+
     public void retournerAuSpawn() {
         this.position[0] = spawnX;
         this.position[1] = spawnY;
-}
+    }
+
     public double[] getposition() {
         return position;
     }
@@ -47,20 +47,33 @@ public class souris {
         return nom;
     }
 
+    // Méthode interne pour appliquer la pause de 0.3 seconde (300 ms)
+    private void appliquerLatence() {
+        try {
+            Thread.sleep(300);                                         // Met le programme en pause pendant 300 ms
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();                        // Restaure l'état d'interruption en cas de besoin
+        }
+    }
+
     public void deplacementhaut() {
-        this.position[1] = this.position[1] + 1;
+        this.position[1] = this.position[1] + 1;                       // Modifie la coordonnée Y vers le haut
+        appliquerLatence();                                            // Applique la latence de 0.3s
     }
 
     public void deplacementbas() {
-        this.position[1] = this.position[1] - 1;
+        this.position[1] = this.position[1] - 1;                       // Modifie la coordonnée Y vers le bas
+        appliquerLatence();                                            // Applique la latence de 0.3s
     }
 
     public void deplacementgauche() {
-        this.position[0] = this.position[0] - 1;
+        this.position[0] = this.position[0] - 1;                       // Modifie la coordonnée X vers la gauche
+        appliquerLatence();                                            // Applique la latence de 0.3s
     }
 
     public void deplacementdroite() {
-        this.position[0] = this.position[0] + 1;
+        this.position[0] = this.position[0] + 1;                       // Modifie la coordonnée X vers la droite
+        appliquerLatence();                                            // Applique la latence de 0.3s
     }
 
     public void mort_souris() {
