@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class BroullonTestSourisMultijoueur extends JFrame {
     private static final int CASE = Carte.TAILLE;
     private static final int PERIODE_MS = 200; // Bot et actualisation : 5 fois par seconde
-    private static final int DEPLACEMENT_MS = 60; // Un pas toutes les 120 ms pendant le maintien
+    private static final int DEPLACEMENT_MS = 120; // Un pas toutes les 120 ms pendant le maintien
     private static final long INVULNERABILITE_MS = 1800;
     private static final long REAPPARITION_OBJET_MS = 3000;
 
@@ -23,6 +23,9 @@ public class BroullonTestSourisMultijoueur extends JFrame {
     private final Connection db;
     private final Bot bot;
     private final Cuisine cuisine;
+    // Le calcul des points est confie a la classe Score existante.
+    private final Score score = new Score();
+    private volatile Map<Integer, Integer> scoresPartie = Collections.emptyMap();
     // Les types d'ingredients proviennent exclusivement de Objets.
     private final Objets definitionObjets = new Objets();
     private final int tableX, tableY;
@@ -48,6 +51,7 @@ public class BroullonTestSourisMultijoueur extends JFrame {
     private final Random aleatoire = new Random();
     // Historique local du joueur, comme la liste A/B/C de Testsouris.
     private final List<Integer> ramassagesLocaux = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private final souris botSourisCible = new souris();
 
     public BroullonTestSourisMultijoueur(Joueur joueur, Carte carte, boolean hote) throws SQLException {
         this.joueur = joueur;
@@ -71,6 +75,7 @@ public class BroullonTestSourisMultijoueur extends JFrame {
             throw new IllegalStateException("Incoherence entre Objets et Cuisine");
         }
         actualiserInfoCuisine();
+        initialiserScore();
 
         int[] pointBot = spawnBot();
         bot = new Bot("Gardien", pointBot[0], pointBot[1], 1.0);
@@ -140,12 +145,15 @@ public class BroullonTestSourisMultijoueur extends JFrame {
                     replacerObjetsRamasses();
                 }
                 lireEtat();
+                scoresPartie = lireScores();
                 // Demarrage automatique si la souris est sur T et possede A, B et C.
                 if (!cuisine.enCours() && estSurTable() && cuisine.commencer(true)) {
                     System.out.println("Cuisson automatique commencee : 10 secondes sur la table.");
                 }
                 if (cuisine.actualiser(estSurTable())) {
                     System.out.println("Plat prepare ! Un exemplaire de A, B et C a ete consomme.");
+                    score.fabriquerPlat();
+                    enregistrerScore();
                     actualiserInfoCuisine();
                 } else if (cuisine.enCours()) {
                     infoCuisine = "Cuisson : " + cuisine.secondesRestantes() + " s";
@@ -282,22 +290,38 @@ public class BroullonTestSourisMultijoueur extends JFrame {
     }
 
     private void avancerBot() throws SQLException {
+        // 1. On récupère les positions des joueurs pour trouver la cible potentielle
         Map<Integer, double[]> positions = joueur.recupererPositions();
         positions.put(joueur.getIdJoueur(), joueur.getPosition());
-        int[] cible = null;
+        
+        double[] meilleurePositionCible = null;
         int plusCourt = Integer.MAX_VALUE;
         for (double[] p : positions.values()) {
             int x = versCarteX(p), y = versCarteY(p);
             if (!carte.caseAccessible(x, y)) continue;
             int distance = Math.abs(x - bot.getX()) + Math.abs(y - bot.getY());
-            if (distance < plusCourt) { plusCourt = distance; cible = new int[]{x, y}; }
+            if (distance < plusCourt) { 
+                plusCourt = distance; 
+                meilleurePositionCible = p; 
+            }
         }
-        if (cible != null && bot.deplacerVers(carte, cible[0], cible[1])) {
-            bot.avancer();
+
+        // 2. On met à jour la position de la souris cible virtuelle
+        if (meilleurePositionCible != null) {
+            int cibleX = versCarteX(meilleurePositionCible);
+            int cibleY = versCarteY(meilleurePositionCible);
+            botSourisCible.setPosition(cibleX, cibleY);
         }
+
+        // 3. Le bot exécute sa propre machine à états (Patrouille -> Tourne -> Poursuite)
+        bot.agir(carte, botSourisCible);
+
+        // 4. On synchronise la nouvelle position du bot dans la base de données
         try (PreparedStatement q = db.prepareStatement(
                 "UPDATE bots_partie SET position_x=?, position_y=? WHERE partie_id=?")) {
-            q.setInt(1, bot.getX()); q.setInt(2, bot.getY()); q.setInt(3, joueur.getIdPartie());
+            q.setInt(1, bot.getX()); 
+            q.setInt(2, bot.getY()); 
+            q.setInt(3, joueur.getIdPartie());
             q.executeUpdate();
         }
     }
@@ -423,6 +447,8 @@ public class BroullonTestSourisMultijoueur extends JFrame {
             cuisine.ajouterIngredient(id);
             actualiserInfoCuisine();
             ramassagesLocaux.add(id);
+            score.ajouterPointsObjet();
+            enregistrerScore();
             System.out.println(joueur.getNom() + " a ramasse l'objet " + nomObjet(id));
         }
     }
@@ -434,6 +460,50 @@ public class BroullonTestSourisMultijoueur extends JFrame {
         positionLocale = joueur.getPosition();
     }
 
+    // Scores partages via MariaDB. Le calcul reste exclusivement dans Score.java.
+    private void initialiserScore() throws SQLException {
+        try (PreparedStatement q = db.prepareStatement(
+                "INSERT INTO scores_partie (partie_id, joueur_id, points) "
+                + "VALUES (?, ?, ?) "
+                + "ON DUPLICATE KEY UPDATE points = VALUES(points)")) {
+            q.setInt(1, joueur.getIdPartie());
+            q.setInt(2, joueur.getIdJoueur());
+            q.setInt(3, score.getScoreTotal());
+            q.executeUpdate();
+        }
+    }
+
+    private void enregistrerScore() throws SQLException {
+        try (PreparedStatement q = db.prepareStatement(
+                "UPDATE scores_partie SET points = ? "
+                + "WHERE partie_id = ? AND joueur_id = ?")) {
+            q.setInt(1, score.getScoreTotal());
+            q.setInt(2, joueur.getIdPartie());
+            q.setInt(3, joueur.getIdJoueur());
+            q.executeUpdate();
+        }
+    }
+
+    private Map<Integer, Integer> lireScores() throws SQLException {
+        Map<Integer, Integer> scores = new TreeMap<>();
+        try (PreparedStatement q = db.prepareStatement(
+                "SELECT joueur_id, points FROM scores_partie WHERE partie_id = ?")) {
+            q.setInt(1, joueur.getIdPartie());
+            try (ResultSet r = q.executeQuery()) {
+                while (r.next()) scores.put(r.getInt(1), r.getInt(2));
+            }
+        }
+        return scores;
+    }
+
+    private String texteScores() {
+        Map<Integer, Integer> snapshot = scoresPartie;
+        if (snapshot.isEmpty()) return "en attente";
+        StringJoiner texte = new StringJoiner(" / ");
+        snapshot.forEach((id, points) -> texte.add("J" + id + ":" + points));
+        return texte.toString();
+    }
+
     private void verifierCollision() {
         int[] b = positionBot;
         if (b == null || joueur.getVie() <= 0) return;
@@ -442,6 +512,12 @@ public class BroullonTestSourisMultijoueur extends JFrame {
                 System.currentTimeMillis() - dernierDegat > INVULNERABILITE_MS) {
             dernierDegat = System.currentTimeMillis();
             joueur.verifierEtMettreAJourVie(joueur.getVie() - 1);
+            score.perdrePointsVie();
+            try {
+                enregistrerScore();
+            } catch (SQLException ex) {
+                System.err.println("Erreur de synchronisation du score : " + ex.getMessage());
+            }
             System.out.println("Le bot vous touche ! Vies restantes : " + joueur.getVie());
         }
     }
@@ -454,6 +530,8 @@ public class BroullonTestSourisMultijoueur extends JFrame {
                     + " | Vie : " + joueur.getVie()
                     + " | " + (hote ? "Hote" : "Invite")
                     + " | Ramassages : " + ramassagesLocaux.size()
+                    + " | Score : " + score.getScoreTotal()
+                    + " | Scores partie : " + texteScores()
                     + " | " + infoCuisine);
             dessin.repaint();
             double[] p = positionLocale;
@@ -575,6 +653,7 @@ public class BroullonTestSourisMultijoueur extends JFrame {
                 joueur.ramasserObjets();
                 enregistrerRamassagesLocaux(avant);
                 lireEtat();
+                scoresPartie = lireScores();
                 verifierCollision();
                 rafraichirVue();
             } catch (SQLException ex) {
