@@ -12,16 +12,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class BroullonTestSourisMultijoueur extends JFrame {
     private static final int CASE = 42;
     private static final int PERIODE_MS = 200; // Bot et actualisation : 5 fois par seconde
-    private static final int DEPLACEMENT_MS = 150; // Un pas toutes les 120 ms pendant le maintien
+    private static final int DEPLACEMENT_MS = 120; // Un pas toutes les 120 ms pendant le maintien
     private static final long INVULNERABILITE_MS = 1800;
     private static final long REAPPARITION_OBJET_MS = 3000;
 
     private final Carte carte;
     private final Joueur joueur;
     private final boolean hote;
-    private final Serveur accesBot;
-    private final Connection db;
+    private Serveur accesBot;
+    private Connection db;
     private final Bot bot;
+    private final Cuisine cuisine;
+    private final int tableX, tableY;
+    private volatile String infoCuisine = "";
     private final int origineX, origineY;
     private final JPanel dessin;
     private final JLabel etat = new JLabel("", SwingConstants.CENTER);
@@ -51,12 +54,17 @@ public class BroullonTestSourisMultijoueur extends JFrame {
         int[] origine = premiereCaseAccessibleAuCentre();
         origineX = origine[0];
         origineY = origine[1];
+        int[] table = trouverTable();
+        tableX = table[0];
+        tableY = table[1];
         positionLocale = joueur.getPosition();
 
         // Une connexion SQL distincte de celle de Joueur, toujours utilisee par le meme thread.
         accesBot = new Serveur();
         db = accesBot.getConnexion();
         if (db == null) throw new SQLException("Connexion pour le bot impossible");
+        cuisine = new Cuisine(db, joueur.getIdPartie(), joueur.getIdJoueur());
+        actualiserInfoCuisine();
 
         int[] pointBot = spawnBot();
         bot = new Bot("Gardien", pointBot[0], pointBot[1], 1.0);
@@ -76,6 +84,12 @@ public class BroullonTestSourisMultijoueur extends JFrame {
                 super.paintComponent(graphisme);
                 Graphics2D g = (Graphics2D) graphisme.create();
                 carte.rendu(g);
+                // Table de cuisine provisoire sur une case accessible.
+                g.setColor(new Color(145, 91, 41));
+                g.fillRoundRect(tableX * CASE + 4, tableY * CASE + 4, CASE - 8, CASE - 8, 8, 8);
+                g.setColor(Color.WHITE);
+                g.setFont(new Font("Arial", Font.BOLD, 13));
+                g.drawString("T", tableX * CASE + 16, tableY * CASE + 27);
                 for (Map.Entry<Integer, double[]> objet : objets.entrySet()) {
                     double[] p = objet.getValue();
                     int x = versCarteX(p), y = versCarteY(p);
@@ -103,7 +117,7 @@ public class BroullonTestSourisMultijoueur extends JFrame {
         };
         dessin.setPreferredSize(new Dimension(carte.getNbColonnes() * CASE, carte.getNbLignes() * CASE));
         add(new JScrollPane(dessin), BorderLayout.CENTER);
-        add(new JLabel("ZQSD : deplacement | A/B/C : objets | Noir : bot | I : ramassages", SwingConstants.CENTER),
+        add(new JLabel("ZQSD : deplacement | T : table / cuisson auto 10 s | E : lancer | I : stock", SwingConstants.CENTER),
                 BorderLayout.SOUTH);
         touches();
         minuterieDeplacement = new javax.swing.Timer(DEPLACEMENT_MS, e -> deplacerSiMaintenu());
@@ -120,6 +134,16 @@ public class BroullonTestSourisMultijoueur extends JFrame {
                     replacerObjetsRamasses();
                 }
                 lireEtat();
+                // Demarrage automatique si la souris est sur T et possede A, B et C.
+                if (!cuisine.enCours() && estSurTable() && cuisine.commencer(true)) {
+                    System.out.println("Cuisson automatique commencee : 10 secondes sur la table.");
+                }
+                if (cuisine.actualiser(estSurTable())) {
+                    System.out.println("Plat prepare ! Un exemplaire de A, B et C a ete consomme.");
+                    actualiserInfoCuisine();
+                } else if (cuisine.enCours()) {
+                    infoCuisine = "Cuisson : " + cuisine.secondesRestantes() + " s";
+                }
                 verifierCollision();
                 rafraichirVue();
             } catch (SQLException ex) {
@@ -164,6 +188,34 @@ public class BroullonTestSourisMultijoueur extends JFrame {
                 }
         if (meilleur == null) throw new IllegalStateException("Aucune case libre sur cette carte");
         return meilleur;
+    }
+
+    // Case de test pour la table, proche du depart et atteignable a pied.
+    private int[] trouverTable() {
+        int[] resultat = {origineX, origineY};
+        int meilleureDistance = Integer.MAX_VALUE;
+        for (int y = 0; y < carte.getNbLignes(); y++) {
+            for (int x = 0; x < carte.getNbColonnes(); x++) {
+                if (!accessibleDepuisOrigine(x, y)) continue;
+                int d = Math.abs(x - origineX) + Math.abs(y - origineY);
+                if (d > 0 && d < meilleureDistance) {
+                    meilleureDistance = d;
+                    resultat = new int[]{x, y};
+                }
+            }
+        }
+        return resultat;
+    }
+
+    private boolean estSurTable() {
+        double[] p = joueur.getPosition();
+        return versCarteX(p) == tableX && versCarteY(p) == tableY;
+    }
+
+    public void actualiserInfoCuisine() throws SQLException {
+        int[] s = cuisine.stock();
+        infoCuisine = "A:" + s[0] + " B:" + s[1] + " C:" + s[2]
+                + " | Plats:" + cuisine.nombrePlats();
     }
 
     private boolean accessibleDepuisOrigine(int x, int y) {
@@ -250,6 +302,7 @@ public class BroullonTestSourisMultijoueur extends JFrame {
                 for (int x = 0; x < carte.getNbColonnes(); x++) {
                     if (!accessibleDepuisOrigine(x, y) ||
                             (x == origineX && y == origineY) ||
+                            (x == tableX && y == tableY) ||
                             dejaPris.contains(x + ":" + y)) continue;
                     int distance = Math.abs(x - cibleX) + Math.abs(y - cibleY);
                     if (distance < meilleureDistance) {
@@ -313,7 +366,8 @@ public class BroullonTestSourisMultijoueur extends JFrame {
             List<int[]> libres = new ArrayList<>();
             for (int y = 0; y < carte.getNbLignes(); y++) {
                 for (int x = 0; x < carte.getNbColonnes(); x++) {
-                    if (accessibleDepuisOrigine(x, y) && !occupees.contains(x + ":" + y)) {
+                    if (accessibleDepuisOrigine(x, y) && !(x == tableX && y == tableY)
+                            && !occupees.contains(x + ":" + y)) {
                         libres.add(new int[]{x, y});
                     }
                 }
@@ -354,6 +408,8 @@ public class BroullonTestSourisMultijoueur extends JFrame {
         Set<Integer> apres = objetsRamassesParMoi();
         apres.removeAll(avant);
         for (int id : apres) {
+            cuisine.ajouterIngredient(id);
+            actualiserInfoCuisine();
             ramassagesLocaux.add(id);
             System.out.println(joueur.getNom() + " a ramasse l'objet " + nomObjet(id));
         }
@@ -384,7 +440,7 @@ public class BroullonTestSourisMultijoueur extends JFrame {
             etat.setText("Partie " + joueur.getIdPartie() + " | " + joueur.getNom() +
                     " | Vie : " + joueur.getVie() + " | " +
                     (hote ? "Hote" : "Invite") +
-                    " | Objets ramasses : " + ramassagesLocaux.size());
+                    " | Objets ramasses : " + ramassagesLocaux.size() + " | " + infoCuisine);
             dessin.repaint();
             double[] p = positionLocale;
             dessin.scrollRectToVisible(new Rectangle(
@@ -398,6 +454,25 @@ public class BroullonTestSourisMultijoueur extends JFrame {
         touche(KeyEvent.VK_Q, "gauche");
         touche(KeyEvent.VK_D, "droite");
         dessin.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+                .put(KeyStroke.getKeyStroke(KeyEvent.VK_E, 0), "cuisiner");
+        dessin.getActionMap().put("cuisiner", new AbstractAction() {
+            @Override public void actionPerformed(ActionEvent e) {
+                reseau.execute(() -> {
+                    try {
+                        if (!estSurTable()) {
+                            System.out.println("Placez votre souris sur la case T pour cuisiner.");
+                        } else if (cuisine.commencer(true)) {
+                            System.out.println("Cuisson lancee : restez sur la table pendant 10 secondes.");
+                        } else {
+                            System.out.println("Il faut 1 A, 1 B et 1 C pour cuisiner, ou une cuisson est deja en cours.");
+                        }
+                    } catch (SQLException ex) {
+                        System.err.println("Erreur cuisine : " + ex.getMessage());
+                    }
+                });
+            }
+        });
+        dessin.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
                 .put(KeyStroke.getKeyStroke(KeyEvent.VK_I, 0), "objets");
         dessin.getActionMap().put("objets", new AbstractAction() {
             @Override public void actionPerformed(ActionEvent e) {
@@ -406,7 +481,7 @@ public class BroullonTestSourisMultijoueur extends JFrame {
                         .collect(java.util.stream.Collectors.joining(", "));
                 JOptionPane.showMessageDialog(BroullonTestSourisMultijoueur.this,
                         "Objets ramasses pendant ce test : " +
-                                (noms.isEmpty() ? "aucun" : noms));
+                                (noms.isEmpty() ? "aucun" : noms) + "\nStock : " + infoCuisine);
             }
         });
     }
@@ -477,6 +552,11 @@ public class BroullonTestSourisMultijoueur extends JFrame {
                     case KeyEvent.VK_D: joueur.deplacerDroite(); break;
                 }
 
+                if (cuisine.enCours() && !estSurTable()) {
+                    cuisine.annuler();
+                    System.out.println("Cuisson annulee : vous avez quitte la table.");
+                    actualiserInfoCuisine();
+                }
                 Set<Integer> avant = objetsRamassesParMoi();
                 joueur.ramasserObjets();
                 enregistrerRamassagesLocaux(avant);
