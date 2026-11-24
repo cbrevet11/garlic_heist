@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
- */
 package garlic_heist;
 
 import java.util.ArrayList;
@@ -85,6 +81,7 @@ public class Testsouris {
 
             // --- DÉTECTION DE RÉCUPÉRATION ET PLACEMENT ALÉATOIRE ---
             double[][] nourrituresAvant = mesObjets.getNourritures();
+            
             double[][] etatAvant = new double[nourrituresAvant.length][2];
             for (int i = 0; i < nourrituresAvant.length; i++) {
                 etatAvant[i][0] = nourrituresAvant[i][0];
@@ -94,16 +91,14 @@ public class Testsouris {
             maSouris.recuperation_objet(mesObjets);
 
             double[][] nourrituresApres = mesObjets.getNourritures();
-            boolean unObjetRamasse = false;
+            
             for (int i = 0; i < nourrituresApres.length; i++) {
                 if (etatAvant[i][0] != -1 && nourrituresApres[i][0] == -1) {
                     inventaireTest.add(String.valueOf(lettresObjets[i]));
-                    unObjetRamasse = true;
+                    
+                    // Fait réapparaître l'objet immédiatement pour chaque item ramassé
+                    mesObjets.nourriturePlacementAleatoire(maSouris.getposition());
                 }
-            }
-
-            if (unObjetRamasse) {
-                mesObjets.nourriturePlacementAleatoire();
             }
         }
 
