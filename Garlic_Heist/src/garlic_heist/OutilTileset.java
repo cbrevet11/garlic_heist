@@ -19,7 +19,7 @@ public class OutilTileset {
         final int zoom = 2;   // agrandit l'image pour mieux lire
 
         BufferedImage tileset = ImageIO.read(
-            OutilTileset.class.getClassLoader().getResource("resources/tileset_42.png"));
+            OutilTileset.class.getClassLoader().getResource("resources/tileset.png"));
 
         BufferedImage vue = new BufferedImage(
             tileset.getWidth() * zoom, tileset.getHeight() * zoom, BufferedImage.TYPE_INT_ARGB);
