@@ -13,6 +13,7 @@ public class BroullonTestSourisMultijoueur extends JFrame {
     private static final int CASE = 42;
     private static final int PERIODE_MS = 500;
     private static final long INVULNERABILITE_MS = 1800;
+    private static final long REAPPARITION_OBJET_MS = 3000;
 
     private final Carte carte;
     private final Joueur joueur;
@@ -30,6 +31,11 @@ public class BroullonTestSourisMultijoueur extends JFrame {
     private volatile Map<Integer, double[]> objets = Collections.emptyMap();
     private volatile int[] positionBot = null;
     private long dernierDegat = 0;
+    // L'hote gere seul le replacement des objets deja ramasses.
+    private final Map<Integer, Long> objetsEnAttente = new HashMap<>();
+    private final Random aleatoire = new Random();
+    // Historique local du joueur, comme la liste A/B/C de Testsouris.
+    private final List<Integer> ramassagesLocaux = new java.util.concurrent.CopyOnWriteArrayList<>();
 
     public BroullonTestSourisMultijoueur(Joueur joueur, Carte carte, boolean hote) throws SQLException {
         this.joueur = joueur;
@@ -47,8 +53,10 @@ public class BroullonTestSourisMultijoueur extends JFrame {
 
         int[] pointBot = spawnBot();
         bot = new Bot("Gardien", pointBot[0], pointBot[1], 1.0);
-        initialiserBot(pointBot);
-        if (hote) initialiserObjetsSurCarte();
+        if (hote) {
+            initialiserBot(pointBot);
+            initialiserObjetsSurCarte();
+        }
         lireEtat();
 
         setTitle("Garlic Heist - " + joueur.getNom());
@@ -61,13 +69,19 @@ public class BroullonTestSourisMultijoueur extends JFrame {
                 super.paintComponent(graphisme);
                 Graphics2D g = (Graphics2D) graphisme.create();
                 carte.rendu(g);
-                for (double[] p : objets.values()) {
+                for (Map.Entry<Integer, double[]> objet : objets.entrySet()) {
+                    double[] p = objet.getValue();
                     int x = versCarteX(p), y = versCarteY(p);
                     if (carte.caseAccessible(x, y)) {
                         g.setColor(Color.YELLOW);
-                        g.fillOval(x * CASE + 12, y * CASE + 12, 18, 18);
+                        g.fillOval(x * CASE + 7, y * CASE + 7, CASE - 14, CASE - 14);
                         g.setColor(Color.BLACK);
-                        g.drawOval(x * CASE + 12, y * CASE + 12, 18, 18);
+                        g.drawOval(x * CASE + 7, y * CASE + 7, CASE - 14, CASE - 14);
+                        g.setFont(new Font("Arial", Font.BOLD, 13));
+                        String lettre = nomObjet(objet.getKey());
+                        FontMetrics m = g.getFontMetrics();
+                        g.drawString(lettre, x * CASE + (CASE - m.stringWidth(lettre)) / 2,
+                                y * CASE + CASE / 2 + 5);
                     }
                 }
                 for (Map.Entry<Integer, double[]> autre : joueursDistants.entrySet())
@@ -82,7 +96,7 @@ public class BroullonTestSourisMultijoueur extends JFrame {
         };
         dessin.setPreferredSize(new Dimension(carte.getNbColonnes() * CASE, carte.getNbLignes() * CASE));
         add(new JScrollPane(dessin), BorderLayout.CENTER);
-        add(new JLabel("ZQSD : deplacer la souris | Jaune : objet | Noir : bot", SwingConstants.CENTER),
+        add(new JLabel("ZQSD : deplacement | A/B/C : objets | Noir : bot | I : ramassages", SwingConstants.CENTER),
                 BorderLayout.SOUTH);
         touches();
         setSize(1000, 750);
@@ -92,7 +106,10 @@ public class BroullonTestSourisMultijoueur extends JFrame {
         reseau.scheduleWithFixedDelay(() -> {
             if (fermeture.get()) return;
             try {
-                if (hote) avancerBot();
+                if (hote) {
+                    avancerBot();
+                    replacerObjetsRamasses();
+                }
                 lireEtat();
                 verifierCollision();
                 rafraichirVue();
@@ -235,6 +252,93 @@ public class BroullonTestSourisMultijoueur extends JFrame {
         }
     }
 
+    private static String nomObjet(int id) {
+        // Meme notation A, B, C que Testsouris.
+        return id >= 1 && id <= 26 ? String.valueOf((char) ('A' + id - 1)) : "O" + id;
+    }
+
+    // L'hote replace les objets ramasses sur une case accessible et libre.
+    // Le delai permet aux deux ordinateurs de constater leur disparition.
+    private void replacerObjetsRamasses() throws SQLException {
+        long maintenant = System.currentTimeMillis();
+        Set<Integer> encoreRamasses = new HashSet<>();
+        try (PreparedStatement q = db.prepareStatement(
+                "SELECT objet_id FROM objets_partie WHERE partie_id=? AND ramasse_par IS NOT NULL")) {
+            q.setInt(1, joueur.getIdPartie());
+            try (ResultSet r = q.executeQuery()) {
+                while (r.next()) {
+                    int id = r.getInt(1);
+                    encoreRamasses.add(id);
+                    objetsEnAttente.putIfAbsent(id, maintenant);
+                }
+            }
+        }
+        objetsEnAttente.keySet().retainAll(encoreRamasses);
+
+        // Cases occupees par les autres objets, joueurs et le bot.
+        Set<String> occupees = new HashSet<>();
+        for (double[] p : joueur.recupererObjetsDisponibles().values()) {
+            occupees.add(versCarteX(p) + ":" + versCarteY(p));
+        }
+        Map<Integer, double[]> positions = joueur.recupererPositions();
+        positions.put(joueur.getIdJoueur(), joueur.getPosition());
+        for (double[] p : positions.values()) {
+            occupees.add(versCarteX(p) + ":" + versCarteY(p));
+        }
+        int[] pb = lirePositionBot();
+        if (pb != null) occupees.add(pb[0] + ":" + pb[1]);
+
+        for (Integer id : new ArrayList<>(objetsEnAttente.keySet())) {
+            if (maintenant - objetsEnAttente.get(id) < REAPPARITION_OBJET_MS) continue;
+            List<int[]> libres = new ArrayList<>();
+            for (int y = 0; y < carte.getNbLignes(); y++) {
+                for (int x = 0; x < carte.getNbColonnes(); x++) {
+                    if (accessibleDepuisOrigine(x, y) && !occupees.contains(x + ":" + y)) {
+                        libres.add(new int[]{x, y});
+                    }
+                }
+            }
+            if (libres.isEmpty()) continue;
+            int[] p = libres.get(aleatoire.nextInt(libres.size()));
+            try (PreparedStatement q = db.prepareStatement(
+                    "UPDATE objets_partie SET position_x=?, position_y=?, ramasse_par=NULL " +
+                    "WHERE partie_id=? AND objet_id=? AND ramasse_par IS NOT NULL")) {
+                q.setInt(1, p[0] - origineX);
+                q.setInt(2, origineY - p[1]);
+                q.setInt(3, joueur.getIdPartie());
+                q.setInt(4, id);
+                if (q.executeUpdate() == 1) {
+                    occupees.add(p[0] + ":" + p[1]);
+                    objetsEnAttente.remove(id);
+                    System.out.println("Objet " + nomObjet(id) + " replace sur la carte.");
+                }
+            }
+        }
+    }
+
+    // Les ramassages de Testsouris restent visibles, sans classe Inventaire.
+    private Set<Integer> objetsRamassesParMoi() throws SQLException {
+        Set<Integer> ids = new HashSet<>();
+        try (PreparedStatement q = db.prepareStatement(
+                "SELECT objet_id FROM objets_partie WHERE partie_id=? AND ramasse_par=?")) {
+            q.setInt(1, joueur.getIdPartie());
+            q.setInt(2, joueur.getIdJoueur());
+            try (ResultSet r = q.executeQuery()) {
+                while (r.next()) ids.add(r.getInt(1));
+            }
+        }
+        return ids;
+    }
+
+    private void enregistrerRamassagesLocaux(Set<Integer> avant) throws SQLException {
+        Set<Integer> apres = objetsRamassesParMoi();
+        apres.removeAll(avant);
+        for (int id : apres) {
+            ramassagesLocaux.add(id);
+            System.out.println(joueur.getNom() + " a ramasse l'objet " + nomObjet(id));
+        }
+    }
+
     private void lireEtat() throws SQLException {
         joueursDistants = new HashMap<>(joueur.recupererPositions());
         objets = new HashMap<>(joueur.recupererObjetsDisponibles());
@@ -259,7 +363,8 @@ public class BroullonTestSourisMultijoueur extends JFrame {
             if (fermeture.get()) return;
             etat.setText("Partie " + joueur.getIdPartie() + " | " + joueur.getNom() +
                     " | Vie : " + joueur.getVie() + " | " +
-                    (hote ? "Hote" : "Invite"));
+                    (hote ? "Hote" : "Invite") +
+                    " | Objets ramasses : " + ramassagesLocaux.size());
             dessin.repaint();
             double[] p = positionLocale;
             dessin.scrollRectToVisible(new Rectangle(
@@ -272,6 +377,18 @@ public class BroullonTestSourisMultijoueur extends JFrame {
         touche(KeyEvent.VK_S, "bas", 0, 1);
         touche(KeyEvent.VK_Q, "gauche", -1, 0);
         touche(KeyEvent.VK_D, "droite", 1, 0);
+        dessin.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+                .put(KeyStroke.getKeyStroke(KeyEvent.VK_I, 0), "objets");
+        dessin.getActionMap().put("objets", new AbstractAction() {
+            @Override public void actionPerformed(ActionEvent e) {
+                String noms = ramassagesLocaux.stream()
+                        .map(BroullonTestSourisMultijoueur::nomObjet)
+                        .collect(java.util.stream.Collectors.joining(", "));
+                JOptionPane.showMessageDialog(BroullonTestSourisMultijoueur.this,
+                        "Objets ramasses pendant ce test : " +
+                                (noms.isEmpty() ? "aucun" : noms));
+            }
+        });
     }
 
     private void touche(int code, String action, int dx, int dy) {
@@ -291,7 +408,9 @@ public class BroullonTestSourisMultijoueur extends JFrame {
                         case "droite": joueur.deplacerDroite(); break;
                     }
                     try {
+                        Set<Integer> avant = objetsRamassesParMoi();
                         joueur.ramasserObjets();
+                        enregistrerRamassagesLocaux(avant);
                         lireEtat();
                         verifierCollision();
                         rafraichirVue();
