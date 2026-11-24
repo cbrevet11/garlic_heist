@@ -1,6 +1,9 @@
 package garlic_heist;
 
 import javax.swing.*;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.*;
@@ -28,6 +31,14 @@ public class BroullonTestSourisMultijoueur extends JFrame {
     private volatile Map<Integer, Integer> scoresPartie = Collections.emptyMap();
     // Les types d'ingredients proviennent exclusivement de Objets.
     private final Objets definitionObjets = new Objets();
+    // Visuels : IDs 1 et 2 suivent l'ordre de Objets.getNourritures().
+    // L'ingredient 3 garde la lettre C tant que son image n'est pas fournie.
+    private final BufferedImage imageOignon = chargerImage("/garlic_heist/images/oignon.png");
+    private final BufferedImage imageTomate = chargerImage("/garlic_heist/images/tomate.png");
+    private final BufferedImage imagePizza = chargerImage("/garlic_heist/images/pizza.png");
+    private final JLabel affichagePlats = new JLabel("", SwingConstants.CENTER);
+    private volatile int platsFabriques = 0;
+    private volatile long pizzaVisibleJusqua = 0L;
     private final int tableX, tableY;
     private volatile String infoCuisine = "";
     private final int origineX, origineY;
@@ -95,6 +106,14 @@ public class BroullonTestSourisMultijoueur extends JFrame {
         affichageScore.setFont(new Font("Arial", Font.BOLD, 24));
         affichageScore.setForeground(new Color(28, 86, 145));
         bandeau.add(affichageScore, BorderLayout.CENTER);
+        affichagePlats.setFont(new Font("Arial", Font.BOLD, 16));
+        affichagePlats.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 6));
+        if (imagePizza != null) {
+            affichagePlats.setIcon(new ImageIcon(redimensionner(imagePizza, 46, 46)));
+            affichagePlats.setHorizontalTextPosition(SwingConstants.RIGHT);
+            affichagePlats.setIconTextGap(7);
+        }
+        bandeau.add(affichagePlats, BorderLayout.EAST);
         bandeau.add(etat, BorderLayout.SOUTH);
         add(bandeau, BorderLayout.NORTH);
 
@@ -109,20 +128,18 @@ public class BroullonTestSourisMultijoueur extends JFrame {
                 g.setColor(Color.WHITE);
                 g.setFont(new Font("Arial", Font.BOLD, 13));
                 g.drawString("T", tableX * CASE + 16, tableY * CASE + 27);
+                // Les images sont uniquement graphiques : position, ramassage et
+                // reapparition continuent de passer par Joueur / Objets / MariaDB.
                 for (Map.Entry<Integer, double[]> objet : objets.entrySet()) {
                     double[] p = objet.getValue();
                     int x = versCarteX(p), y = versCarteY(p);
                     if (carte.caseAccessible(x, y)) {
-                        g.setColor(Color.YELLOW);
-                        g.fillOval(x * CASE + 7, y * CASE + 7, CASE - 14, CASE - 14);
-                        g.setColor(Color.BLACK);
-                        g.drawOval(x * CASE + 7, y * CASE + 7, CASE - 14, CASE - 14);
-                        g.setFont(new Font("Arial", Font.BOLD, 13));
-                        String lettre = nomObjet(objet.getKey());
-                        FontMetrics m = g.getFontMetrics();
-                        g.drawString(lettre, x * CASE + (CASE - m.stringWidth(lettre)) / 2,
-                                y * CASE + CASE / 2 + 5);
+                        dessinerIngredient(g, objet.getKey(), x, y);
                     }
+                }
+                // Montrer brievement la pizza sur la table apres la cuisson.
+                if (System.currentTimeMillis() < pizzaVisibleJusqua) {
+                    dessinerImageCase(g, imagePizza, tableX, tableY);
                 }
                 for (Map.Entry<Integer, double[]> autre : joueursDistants.entrySet())
                     dessinerRond(g, versCarteX(autre.getValue()), versCarteY(autre.getValue()),
@@ -163,6 +180,7 @@ public class BroullonTestSourisMultijoueur extends JFrame {
                     score.fabriquerPlat();
                     enregistrerScore();
                     actualiserInfoCuisine();
+                    pizzaVisibleJusqua = System.currentTimeMillis() + 3000L;
                 } else if (cuisine.enCours()) {
                     infoCuisine = "Cuisson : " + cuisine.secondesRestantes() + " s";
                 }
@@ -241,7 +259,8 @@ public class BroullonTestSourisMultijoueur extends JFrame {
             if (i > 0) texte.append("  ");
             texte.append(nomObjet(i + 1)).append(":").append(stock[i]);
         }
-        infoCuisine = texte.append(" | Plats:").append(cuisine.nombrePlats()).toString();
+        platsFabriques = cuisine.nombrePlats();
+        infoCuisine = texte.append(" | Pizzas:").append(platsFabriques).toString();
     }
 
     private boolean accessibleDepuisOrigine(int x, int y) {
@@ -264,6 +283,58 @@ public class BroullonTestSourisMultijoueur extends JFrame {
 
     private int versCarteX(double[] p) { return origineX + (int) p[0]; }
     private int versCarteY(double[] p) { return origineY - (int) p[1]; }
+
+    // Chargement des sprites depuis le dossier des ressources du projet NetBeans.
+    // Si un fichier est absent, la lettre A/B/C reste visible.
+    private static BufferedImage chargerImage(String chemin) {
+        try (java.io.InputStream flux = BroullonTestSourisMultijoueur.class.getResourceAsStream(chemin)) {
+            if (flux == null) {
+                System.err.println("Image manquante : " + chemin);
+                return null;
+            }
+            return ImageIO.read(flux);
+        } catch (IOException ex) {
+            System.err.println("Impossible de lire " + chemin + " : " + ex.getMessage());
+            return null;
+        }
+    }
+
+    private static BufferedImage redimensionner(BufferedImage source, int largeur, int hauteur) {
+        BufferedImage destination = new BufferedImage(largeur, hauteur, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = destination.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        g.drawImage(source, 0, 0, largeur, hauteur, null);
+        g.dispose();
+        return destination;
+    }
+
+    private void dessinerImageCase(Graphics2D g, BufferedImage image, int x, int y) {
+        if (image == null) return;
+        Object ancien = g.getRenderingHint(RenderingHints.KEY_INTERPOLATION);
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        g.drawImage(image, x * CASE + 3, y * CASE + 3, CASE - 6, CASE - 6, null);
+        if (ancien != null) g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, ancien);
+    }
+
+    private void dessinerIngredient(Graphics2D g, int id, int x, int y) {
+        BufferedImage image = id == 1 ? imageOignon : id == 2 ? imageTomate : null;
+        if (image != null) {
+            dessinerImageCase(g, image, x, y);
+            return;
+        }
+        // Troisieme ingredient (et autres futurs) : conserver la lettre existante.
+        g.setColor(Color.YELLOW);
+        g.fillOval(x * CASE + 7, y * CASE + 7, CASE - 14, CASE - 14);
+        g.setColor(Color.BLACK);
+        g.drawOval(x * CASE + 7, y * CASE + 7, CASE - 14, CASE - 14);
+        g.setFont(new Font("Arial", Font.BOLD, 13));
+        String lettre = nomObjet(id);
+        FontMetrics metriques = g.getFontMetrics();
+        g.drawString(lettre, x * CASE + (CASE - metriques.stringWidth(lettre)) / 2,
+                y * CASE + CASE / 2 + 5);
+    }
 
     private void dessinerRond(Graphics2D g, int x, int y, Color couleur, String numero) {
         if (!carte.caseAccessible(x, y)) return;
@@ -525,6 +596,7 @@ public class BroullonTestSourisMultijoueur extends JFrame {
                     + " | " + infoCuisine);
             affichageScore.setText("MON SCORE : " + score.getScoreTotal()
                     + "     |     SCORES PARTIE : " + texteScores());
+            affichagePlats.setText("x " + platsFabriques);
             dessin.repaint();
             double[] p = positionLocale;
             dessin.scrollRectToVisible(new Rectangle(
