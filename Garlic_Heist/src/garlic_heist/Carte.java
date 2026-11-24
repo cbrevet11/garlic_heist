@@ -21,6 +21,7 @@ public class Carte {
     private static final String[][] NIVEAUX = {
         { // ----- Niveau 0 -----
             "vvv[[[[[[[[[[[[[[[[[[[[[[[[[[[[[vvvvvv",
+            "vvv[[[[[[[[[[[[[[[[[[[[[[[[[[[[[vvvvvv",
             "vvv<tt....c.|..rrcrr..|......tt>vvvvvv",
             "vvv<........|..rrrrr..|.c......>vvvvvv",
             "vvv<.....aa....rrrrr...........>vvvvvv",
@@ -39,7 +40,8 @@ public class Carte {
             "vvv<........|...~~~...|.......c>vvvvvv",
             "vvv<........|...~~~...|.......c>vvvvvv",
             "vvv<........|...~~~...|.......c>vvvvvv",
-            "vvv<]]]]]]]]]]]]]]]]]]]]]]]]]]]]>vvvvv"
+            "vvv<]]]]]]]]]]]]]]]]]]]]]]]]]]]]>vvvvv",
+            "vvv[[[[[[[[[[[[[[[[[[[[[[[[[[[[[vvvvvv"
         },
         { // ----- Niveau 1 -----
             "[[[[[[[[[[[[[[[",
