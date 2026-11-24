@@ -37,11 +37,9 @@ public class souris {
     public String getnom() {
         return nom;
     }
-
-    // Méthode interne pour appliquer la pause de 0.3 seconde (300 ms)
     private void appliquerLatence() {
         try {
-            Thread.sleep(300);                                                 // Met le programme en pause pendant 300 ms
+            Thread.sleep(150);                                                 // Met le programme en pause pendant 300 ms
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();                                // Restaure l'état d'interruption en cas de besoin
         }
