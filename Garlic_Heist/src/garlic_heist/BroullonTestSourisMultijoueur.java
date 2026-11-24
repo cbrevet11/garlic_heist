@@ -33,6 +33,7 @@ public class BroullonTestSourisMultijoueur extends JFrame {
     private final int origineX, origineY;
     private final JPanel dessin;
     private final JLabel etat = new JLabel("", SwingConstants.CENTER);
+    private final JLabel affichageScore = new JLabel("", SwingConstants.CENTER);
     private final ScheduledExecutorService reseau = Executors.newSingleThreadScheduledExecutor();
     private final AtomicBoolean fermeture = new AtomicBoolean(false);
     // Les touches sont gerees sur le thread graphique Swing (EDT).
@@ -51,7 +52,6 @@ public class BroullonTestSourisMultijoueur extends JFrame {
     private final Random aleatoire = new Random();
     // Historique local du joueur, comme la liste A/B/C de Testsouris.
     private final List<Integer> ramassagesLocaux = new java.util.concurrent.CopyOnWriteArrayList<>();
-    private final souris botSourisCible = new souris();
 
     public BroullonTestSourisMultijoueur(Joueur joueur, Carte carte, boolean hote) throws SQLException {
         this.joueur = joueur;
@@ -88,7 +88,15 @@ public class BroullonTestSourisMultijoueur extends JFrame {
         setTitle("Garlic Heist - " + joueur.getNom());
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
-        add(etat, BorderLayout.NORTH);
+        // Bandeau agrandi pour les scores, distinct des autres informations.
+        JPanel bandeau = new JPanel(new BorderLayout(0, 5));
+        bandeau.setBorder(BorderFactory.createEmptyBorder(9, 12, 9, 12));
+        etat.setFont(new Font("Arial", Font.PLAIN, 14));
+        affichageScore.setFont(new Font("Arial", Font.BOLD, 24));
+        affichageScore.setForeground(new Color(28, 86, 145));
+        bandeau.add(affichageScore, BorderLayout.CENTER);
+        bandeau.add(etat, BorderLayout.SOUTH);
+        add(bandeau, BorderLayout.NORTH);
 
         dessin = new JPanel() {
             @Override protected void paintComponent(Graphics graphisme) {
@@ -290,38 +298,22 @@ public class BroullonTestSourisMultijoueur extends JFrame {
     }
 
     private void avancerBot() throws SQLException {
-        // 1. On récupère les positions des joueurs pour trouver la cible potentielle
         Map<Integer, double[]> positions = joueur.recupererPositions();
         positions.put(joueur.getIdJoueur(), joueur.getPosition());
-        
-        double[] meilleurePositionCible = null;
+        int[] cible = null;
         int plusCourt = Integer.MAX_VALUE;
         for (double[] p : positions.values()) {
             int x = versCarteX(p), y = versCarteY(p);
             if (!carte.caseAccessible(x, y)) continue;
             int distance = Math.abs(x - bot.getX()) + Math.abs(y - bot.getY());
-            if (distance < plusCourt) { 
-                plusCourt = distance; 
-                meilleurePositionCible = p; 
-            }
+            if (distance < plusCourt) { plusCourt = distance; cible = new int[]{x, y}; }
         }
-
-        // 2. On met à jour la position de la souris cible virtuelle
-        if (meilleurePositionCible != null) {
-            int cibleX = versCarteX(meilleurePositionCible);
-            int cibleY = versCarteY(meilleurePositionCible);
-            botSourisCible.setPosition(cibleX, cibleY);
+        if (cible != null && bot.deplacerVers(carte, cible[0], cible[1])) {
+            bot.avancer();
         }
-
-        // 3. Le bot exécute sa propre machine à états (Patrouille -> Tourne -> Poursuite)
-        bot.agir(carte, botSourisCible);
-
-        // 4. On synchronise la nouvelle position du bot dans la base de données
         try (PreparedStatement q = db.prepareStatement(
                 "UPDATE bots_partie SET position_x=?, position_y=? WHERE partie_id=?")) {
-            q.setInt(1, bot.getX()); 
-            q.setInt(2, bot.getY()); 
-            q.setInt(3, joueur.getIdPartie());
+            q.setInt(1, bot.getX()); q.setInt(2, bot.getY()); q.setInt(3, joueur.getIdPartie());
             q.executeUpdate();
         }
     }
@@ -530,9 +522,9 @@ public class BroullonTestSourisMultijoueur extends JFrame {
                     + " | Vie : " + joueur.getVie()
                     + " | " + (hote ? "Hote" : "Invite")
                     + " | Ramassages : " + ramassagesLocaux.size()
-                    + " | Score : " + score.getScoreTotal()
-                    + " | Scores partie : " + texteScores()
                     + " | " + infoCuisine);
+            affichageScore.setText("MON SCORE : " + score.getScoreTotal()
+                    + "     |     SCORES PARTIE : " + texteScores());
             dessin.repaint();
             double[] p = positionLocale;
             dessin.scrollRectToVisible(new Rectangle(
