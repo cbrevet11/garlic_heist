@@ -136,7 +136,7 @@ public class Carte {
         definir('p', 5, 1, false);   // pics
         definir('t', 0, 3, true);   // tonneau
         definir('b', 0, 0, true);   // Boite
-        definir('s', 3, 0, false);   // scquelette
+        definir('s', 3, 0, true);   // scquelette
         definir('c', 2, 0, true);   // coffre
         definir('a', 4, 2, false);   // table, assiettes
     }
