@@ -10,19 +10,21 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BroullonTestSourisMultijoueur extends JFrame {
-    private static final int CASE = 42;
+    private static final int CASE = Carte.TAILLE;
     private static final int PERIODE_MS = 200; // Bot et actualisation : 5 fois par seconde
-    private static final int DEPLACEMENT_MS = 120; // Un pas toutes les 120 ms pendant le maintien
+    private static final int DEPLACEMENT_MS = 60; // Un pas toutes les 120 ms pendant le maintien
     private static final long INVULNERABILITE_MS = 1800;
     private static final long REAPPARITION_OBJET_MS = 3000;
 
     private final Carte carte;
     private final Joueur joueur;
     private final boolean hote;
-    private Serveur accesBot;
-    private Connection db;
+    private final Serveur accesBot;
+    private final Connection db;
     private final Bot bot;
     private final Cuisine cuisine;
+    // Les types d'ingredients proviennent exclusivement de Objets.
+    private final Objets definitionObjets = new Objets();
     private final int tableX, tableY;
     private volatile String infoCuisine = "";
     private final int origineX, origineY;
@@ -64,6 +66,10 @@ public class BroullonTestSourisMultijoueur extends JFrame {
         db = accesBot.getConnexion();
         if (db == null) throw new SQLException("Connexion pour le bot impossible");
         cuisine = new Cuisine(db, joueur.getIdPartie(), joueur.getIdJoueur());
+        if (definitionObjets.getNourritures() == null
+                || definitionObjets.getNourritures().length != cuisine.getNombreIngredients()) {
+            throw new IllegalStateException("Incoherence entre Objets et Cuisine");
+        }
         actualiserInfoCuisine();
 
         int[] pointBot = spawnBot();
@@ -117,7 +123,7 @@ public class BroullonTestSourisMultijoueur extends JFrame {
         };
         dessin.setPreferredSize(new Dimension(carte.getNbColonnes() * CASE, carte.getNbLignes() * CASE));
         add(new JScrollPane(dessin), BorderLayout.CENTER);
-        add(new JLabel("ZQSD : deplacement | T : table / cuisson auto 10 s | E : lancer | I : stock", SwingConstants.CENTER),
+        add(new JLabel("Maintenir ZQSD : deplacement | T : table / cuisson 10 s | E : cuisiner | I : stock", SwingConstants.CENTER),
                 BorderLayout.SOUTH);
         touches();
         minuterieDeplacement = new javax.swing.Timer(DEPLACEMENT_MS, e -> deplacerSiMaintenu());
@@ -212,10 +218,14 @@ public class BroullonTestSourisMultijoueur extends JFrame {
         return versCarteX(p) == tableX && versCarteY(p) == tableY;
     }
 
-    public void actualiserInfoCuisine() throws SQLException {
-        int[] s = cuisine.stock();
-        infoCuisine = "A:" + s[0] + " B:" + s[1] + " C:" + s[2]
-                + " | Plats:" + cuisine.nombrePlats();
+    private void actualiserInfoCuisine() throws SQLException {
+        int[] stock = cuisine.stock();
+        StringBuilder texte = new StringBuilder("Ingredients : ");
+        for (int i = 0; i < stock.length; i++) {
+            if (i > 0) texte.append("  ");
+            texte.append(nomObjet(i + 1)).append(":").append(stock[i]);
+        }
+        infoCuisine = texte.append(" | Plats:").append(cuisine.nombrePlats()).toString();
     }
 
     private boolean accessibleDepuisOrigine(int x, int y) {
@@ -282,7 +292,9 @@ public class BroullonTestSourisMultijoueur extends JFrame {
             int distance = Math.abs(x - bot.getX()) + Math.abs(y - bot.getY());
             if (distance < plusCourt) { plusCourt = distance; cible = new int[]{x, y}; }
         }
-        if (cible != null && bot.deplacerVers(carte, cible[0], cible[1])) bot.avancer();
+        if (cible != null && bot.deplacerVers(carte, cible[0], cible[1])) {
+            bot.avancer();
+        }
         try (PreparedStatement q = db.prepareStatement(
                 "UPDATE bots_partie SET position_x=?, position_y=? WHERE partie_id=?")) {
             q.setInt(1, bot.getX()); q.setInt(2, bot.getY()); q.setInt(3, joueur.getIdPartie());
@@ -291,7 +303,7 @@ public class BroullonTestSourisMultijoueur extends JFrame {
     }
 
     private void initialiserObjetsSurCarte() throws SQLException {
-        double[][] positions = new Objets().getNourritures();
+        double[][] positions = definitionObjets.getNourritures();
         Set<String> dejaPris = new HashSet<>();
         for (int i = 0; i < positions.length; i++) {
             int cibleX = origineX + (int) positions[i][0];
@@ -437,10 +449,12 @@ public class BroullonTestSourisMultijoueur extends JFrame {
     private void rafraichirVue() {
         SwingUtilities.invokeLater(() -> {
             if (fermeture.get()) return;
-            etat.setText("Partie " + joueur.getIdPartie() + " | " + joueur.getNom() +
-                    " | Vie : " + joueur.getVie() + " | " +
-                    (hote ? "Hote" : "Invite") +
-                    " | Objets ramasses : " + ramassagesLocaux.size() + " | " + infoCuisine);
+            etat.setText("Niveau " + (carte.getNumeroNiveau() + 1)
+                    + " | Partie " + joueur.getIdPartie() + " | " + joueur.getNom()
+                    + " | Vie : " + joueur.getVie()
+                    + " | " + (hote ? "Hote" : "Invite")
+                    + " | Ramassages : " + ramassagesLocaux.size()
+                    + " | " + infoCuisine);
             dessin.repaint();
             double[] p = positionLocale;
             dessin.scrollRectToVisible(new Rectangle(
