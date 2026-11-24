@@ -18,7 +18,7 @@ public class Garlic_Heist extends JFrame implements ActionListener {
     // Le jeu dessine toujours dans cette zone, ensuite elle est agrandie ou
     // réduite pour remplir la fenêtre. Garde tous tes niveaux à cette taille.
     public static final int LARGEUR = 38 * Carte.TAILLE;
-    public static final int HAUTEUR = 22 * Carte.TAILLE;
+    public static final int HAUTEUR = 26 * Carte.TAILLE;
 
     private BufferedImage buffer;
     private Graphics2D contexteBuffer;

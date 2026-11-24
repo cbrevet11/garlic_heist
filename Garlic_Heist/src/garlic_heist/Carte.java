@@ -20,41 +20,32 @@ public class Carte {
     //   r  sol rouge         b  sol beige       g  grille       p  pics
     private static final String[][] NIVEAUX = {
         { // ----- Niveau 0 -----
-            "vvv[[[[[[[[[[[[[[[[[[[[[[[[[[[[[vvvvvv",
-            "vvv[[[[[[[[[[[[[[[[[[[[[[[[[[[[[vvvvvv",
-            "vvv<tt....c.|..rrcrr..|......tt>vvvvvv",
-            "vvv<........|..rrrrr..|.c......>vvvvvv",
-            "vvv<.....aa....rrrrr...........>vvvvvv",
-            "vvv<.....................s.....>vvvvvv",
-            "vvv<t.......|..g...g..|........>vvvvvv",
-            "vvv<........|.........|........>vvvvvv",
-            "vvv<]]].]]]]|.........|]]]].]]]>vvvvvv",
-            "vvv<[[[.[[[[|.........|[[[[.[[[>vvvvvv",
-            "vvv<........|.........|........>vvvvvv",
-            "vvv<.aa.....|...~~~...|.aa.....>vvvvvv",
-            "vvv<......c.....~~~...........t>vvvvvv",
-            "vvv<............~~~............>vvvvvv",
-            "vvv<........|...~~~...|.ppppppp>vvvvvv",
-            "vvv<t.....s.|...~~~...|........>vvvvvv",
-            "vvv<........|...~~~...|.......c>vvvvvv",
-            "vvv<........|...~~~...|.......c>vvvvvv",
-            "vvv<........|...~~~...|.......c>vvvvvv",
-            "vvv<........|...~~~...|.......c>vvvvvv",
-            "vvv<]]]]]]]]]]]]]]]]]]]]]]]]]]]]>vvvvv",
-            "vvv[[[[[[[[[[[[[[[[[[[[[[[[[[[[[vvvvvv"
-        },
-        { // ----- Niveau 1 -----
-            "[[[[[[[[[[[[[[[",
-            "<ccrrr|..~~~..>",
-            "<srrrr|..~~~..>",
-            "<rrrrr...~~~..>",
-            "<rrrrr|.......>",
-            "<]]]]]]]]].]]]>",
-            "<[[[[[[[[[.[[[>",
-            "<t............>",
-            "<t.aa.........>",
-            "<....ppp.....t>",
-            "]]]]]]]]]]]]]]]"
+            "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",
+            "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",
+            "vv[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[vv",
+            "vv<..aa.c.|..........|cc....ttttt>vv",
+            "vv<......c|..rrcrr...|f.....ttttt>vv",
+            "vv<..aa...|..rrrrr...|...........>vv",
+            "vv<.......|..rrrrr...............>vv",
+            "vv<..aa..........................>vv",
+            "vv<.......|..g...g..|bbbbbbbbbbbb>vv",
+            "vv<ttt....|.........|bbbbbbbbbbbb>vv",
+            "vv<ttt....|.........|....bb......>vv",
+            "vv<---.---|.........|----bb------>vv",
+            "vv<.......|.........|.........ttt>vv",
+            "vv<.aa....|...~~~...|.aa......ttt>vv",
+            "vv<............~~~...............>vv",
+            "vv<.aa.........~~~...............>vv",
+            "vv<........|...~~~...|....aaaa...>vv",
+            "vv<.aa...s.|...~~~...|...........>vv",
+            "vv<.-------|...~~~...|....aaaa...>vv",
+            "vv<...ccccc|...~~~...|...........>vv",
+            "vv<......ff|...~~~...|....aaaa...>vv",
+            "vv<........|...~~~...|...........>vv",
+            "vv<tt......|.........|....aaaa...>vv",
+            "vv]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]vv",
+            "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",
+            "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
         }
     };
 
@@ -117,28 +108,27 @@ public class Carte {
         // ----- Tuiles simples -----
         // Coordonnées : colonne, ligne dans le tileset (8 colonnes x 4 lignes)
 
-        // SOL, MURS ET EAU
-        definir('.', 7, 1, false);   // sol château
-        definir('|', 6, 0, true);    // mur 
+        // SOL, MURS ET AUTRES SOLS
+        definir('b', 0, 0, true);   // Boite
+        definir('o', 1, 0, true);   // cle
+        definir('c', 2, 0, true);   // coffre
+        definir('s', 3, 0, true);   // scquelette
         definir('~', 5, 0, true);   // eau
-
-        // AUTRES SOLS ET PIÈGES
-        definir('<', 2, 1, true);   // mur exté gauche
-        definir('>', 1, 1, true);   // mur exté droit
+        definir('|', 6, 0, true);    // mur vertical
         definir('[', 7, 0, true);   // mur exté haut
         definir(']', 0, 1, true);   // mur exté bas
-        definir('>', 5, 1, true);   // mur exté droit
-        definir('p', 5, 1, false);   // pics
-        definir('r', 1, 2, false);   // sol rouge
-        definir('b', 0, 2, false);   // sol beige
-        definir('v', 2, 2, false);   // sol exté
-        definir('g', 4, 1, false);   // grille
-        definir('p', 5, 1, false);   // pics
-        definir('t', 0, 3, true);   // tonneau
-        definir('b', 0, 0, true);   // Boite
-        definir('s', 3, 0, true);   // scquelette
-        definir('c', 2, 0, true);   // coffre
-        definir('a', 4, 2, false);   // table, assiettes
+        definir('>', 1, 1, true);   // mur exté droit
+        definir('<', 2, 1, true);   // mur exté gauche
+        definir('-', 3, 1, true);    // mur horizontal
+        definir('f', 4, 1, true);   // or
+        definir('g', 5, 1, false);   // grille
+        definir('p', 6, 1, false);   // pics
+        definir('.', 0, 2, false);   // sol château
+        definir('b', 1, 2, false);   // sol beige
+        definir('r', 2, 2, false);   // sol rouge
+        definir('v', 3, 2, false);   // sol exté
+        definir('t', 1, 3, true);   // tonneau
+        definir('a', 5, 2, true);   // table, assiettes
     }
 
     // Découpe une tuile du tileset et l'associe à une lettre
@@ -150,7 +140,7 @@ public class Carte {
         }
     }
 
-    
+
     
     // Partie de Adrien
     
