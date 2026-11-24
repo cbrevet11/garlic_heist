@@ -21,31 +21,27 @@ public class Carte {
     private static final String[][] NIVEAUX = {
         { // ----- Niveau 0 -----
             "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",
-            "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",
             "vv[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[vv",
-            "vv<..aa.c.|..........|cc....ttttt>vv",
-            "vv<......c|..rrcrr...|f.....ttttt>vv",
+            "vv<..aa.cc|..........|cc....ttttt>vv",
+            "vv<......f|..rrcrr...|f.....ttttt>vv",
             "vv<..aa...|..rrrrr...|...........>vv",
-            "vv<.......|..rrrrr...............>vv",
-            "vv<..aa..........................>vv",
-            "vv<.......|..g...g..|bbbbbbbbbbbb>vv",
-            "vv<ttt....|.........|bbbbbbbbbbbb>vv",
-            "vv<ttt....|.........|....bb......>vv",
-            "vv<---.---|.........|----bb------>vv",
-            "vv<.......|.........|.........ttt>vv",
-            "vv<.aa....|...~~~...|.aa......ttt>vv",
-            "vv<............~~~...............>vv",
-            "vv<.aa.........~~~...............>vv",
-            "vv<........|...~~~...|....aaaa...>vv",
-            "vv<.aa...s.|...~~~...|...........>vv",
-            "vv<.-------|...~~~...|....aaaa...>vv",
-            "vv<...ccccc|...~~~...|...........>vv",
-            "vv<......ff|...~~~...|....aaaa...>vv",
-            "vv<........|...~~~...|...........>vv",
-            "vv<tt......|.........|....aaaa...>vv",
+            "vv<..aabbbbbbbbbbbbbbbbbbbb......>vv",
+            "vv<.......|..g.b.g..|....bb......>vv",
+            "vv<ttt....|....b....|....bb......>vv",
+            "vv<ttt....|....b....|....bb......>vv",
+            "vv<---.---|.bbbbbbb.|----bb------>vv",
+            "vv<.......|.b.....b.|....bb...ttt>vv",
+            "vv<.aa....|.b..~~.b.|....bb...ttt>vv",
+            "vv<.........b..~~.bbbbbbbbb......>vv",
+            "vv<.aabbbbbbb..~~........bb......>vv",
+            "vv<........|...~~....|....aaaa...>vv",
+            "vv<.aa...s.|...~~....|...........>vv",
+            "vv<.-------|...~~....|....aaaa...>vv",
+            "vv<...ccccc|.........|...........>vv",
+            "vv<......ff|.........|....aaaa...>vv",
+            "vv<tt....BB|.........|....aaaa...>vv",
             "vv]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]vv",
             "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",
-            "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
         }
     };
 
@@ -109,7 +105,7 @@ public class Carte {
         // Coordonnées : colonne, ligne dans le tileset (8 colonnes x 4 lignes)
 
         // SOL, MURS ET AUTRES SOLS
-        definir('b', 0, 0, true);   // Boite
+        definir('B', 0, 0, true);   // Boite
         definir('o', 1, 0, true);   // cle
         definir('c', 2, 0, true);   // coffre
         definir('s', 3, 0, true);   // scquelette
