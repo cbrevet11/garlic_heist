@@ -33,7 +33,7 @@ public class Objets {
         this.nourritures[2] = new double[]{8.0, 7.0};   // 3ème item
     }
 
-    // Getter pour récupérer les positions de toute la nourriture
+   
     public double[][] getNourritures() {
         return nourritures;
     }

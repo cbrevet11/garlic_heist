@@ -15,20 +15,11 @@ public class souris {
     private Bot bot;
     private Objets nourritures;
     private Objets positionobj;
-    private double spawnX;
-    private double spawnY;
 
     public souris() {
         this.vie = 3;
-        this.position = new double[]{0.0, 0.0}; // Initialisation propre de la position
+        this.position = new double[]{0.0, 0.0};                                // Initialisation de la position de départ à 0,0
         this.nom = "Souris";
-        this.spawnX = position[0]; 
-        this.spawnY = position[1];
-    }
-
-    public void retournerAuSpawn() {
-        this.position[0] = spawnX;
-        this.position[1] = spawnY;
     }
 
     public double[] getposition() {
@@ -50,46 +41,55 @@ public class souris {
     // Méthode interne pour appliquer la pause de 0.3 seconde (300 ms)
     private void appliquerLatence() {
         try {
-            Thread.sleep(300);                                         // Met le programme en pause pendant 300 ms
+            Thread.sleep(300);                                                 // Met le programme en pause pendant 300 ms
         } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();                        // Restaure l'état d'interruption en cas de besoin
+            Thread.currentThread().interrupt();                                // Restaure l'état d'interruption en cas de besoin
         }
     }
 
     public void deplacementhaut() {
-        this.position[1] = this.position[1] + 1;                       // Modifie la coordonnée Y vers le haut
-        appliquerLatence();                                            // Applique la latence de 0.3s
+        this.position[1] = this.position[1] + 1;                               // Modifie la coordonnée Y vers le haut
+        appliquerLatence();                                                    // Applique la latence de 0.3s
     }
 
     public void deplacementbas() {
-        this.position[1] = this.position[1] - 1;                       // Modifie la coordonnée Y vers le bas
-        appliquerLatence();                                            // Applique la latence de 0.3s
+        this.position[1] = this.position[1] - 1;                               // Modifie la coordonnée Y vers le bas
+        appliquerLatence();                                                    // Applique la latence de 0.3s
     }
 
     public void deplacementgauche() {
-        this.position[0] = this.position[0] - 1;                       // Modifie la coordonnée X vers la gauche
-        appliquerLatence();                                            // Applique la latence de 0.3s
+        this.position[0] = this.position[0] - 1;                               // Modifie la coordonnée X vers la gauche
+        appliquerLatence();                                                    // Applique la latence de 0.3s
     }
 
     public void deplacementdroite() {
-        this.position[0] = this.position[0] + 1;                       // Modifie la coordonnée X vers la droite
-        appliquerLatence();                                            // Applique la latence de 0.3s
+        this.position[0] = this.position[0] + 1;                               // Modifie la coordonnée X vers la droite
+        appliquerLatence();                                                    // Applique la latence de 0.3s
     }
 
     public void mort_souris() {
-        if (this.vie <= 0) {
-            System.out.println("la souris est morte");
+        if (this.vie <= 0) {                                                   // Vérifie si la souris n'a plus de vie
+            System.out.println("La souris est morte !");                       // Message dans la console
+            this.position[0] = -1;                                             // Fait disparaître la souris de l'axe X (hors de la grille)
+            this.position[1] = -1;                                             // Fait disparaître la souris de l'axe Y (hors de la grille)
         }
     }
 
     public void perte_vie(Bot botEnnemi) {
         double[] posBot = botEnnemi.getposition();
         if (Math.abs(this.position[0] - posBot[0]) + Math.abs(this.position[1] - posBot[1]) == 1) {
-            this.vie = this.vie - 1;
+            this.vie = this.vie - 1;                                           // Retire un point de vie
             if (this.vie < 0) {
                 this.vie = 0;
             }
-            mort_souris();
+            
+            if (this.vie > 0) {                                                // Si la souris a encore au moins 1 vie
+                this.position[0] = 0.0;                                        // Repositionne la souris en X = 0.0
+                this.position[1] = 0.0;                                        // Repositionne la souris en Y = 0.0
+                System.out.println("Touchée ! Retour en (0,0). Vies restantes : " + this.vie);
+            } else {
+                mort_souris();                                                 // Sinon, gère la mort définitive
+            }
         }
     }
 
