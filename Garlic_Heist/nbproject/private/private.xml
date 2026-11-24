@@ -4,13 +4,13 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/Z:/Documents/informatique/garlic_heist/Garlic_Heist/src/garlic_heist/Garlic_Heist.java</file>
-            <file>file:/Z:/Documents/informatique/garlic_heist/Garlic_Heist/src/garlic_heist/souris.java</file>
             <file>file:/Z:/Documents/informatique/garlic_heist/Garlic_Heist/src/garlic_heist/Joueur.java</file>
             <file>file:/Z:/Documents/informatique/garlic_heist/Garlic_Heist/src/garlic_heist/Serveur.java</file>
-            <file>file:/Z:/Documents/informatique/garlic_heist/Garlic_Heist/src/garlic_heist/TestCompletSouris.java</file>
-            <file>file:/Z:/Documents/informatique/garlic_heist/Garlic_Heist/src/garlic_heist/TestInteractifSouris.java</file>
-            <file>file:/Z:/Documents/informatique/garlic_heist/Garlic_Heist/src/garlic_heist/TestJoueur.java</file>
-            <file>file:/Z:/Documents/informatique/garlic_heist/Garlic_Heist/src/garlic_heist/TestGrilleSouris.java</file>
+            <file>file:/Z:/Documents/informatique/garlic_heist/Garlic_Heist/src/garlic_heist/Client.java</file>
+            <file>file:/Z:/Documents/informatique/garlic_heist/Garlic_Heist/src/garlic_heist/souris.java</file>
+            <file>file:/Z:/Documents/informatique/garlic_heist/Garlic_Heist/src/garlic_heist/Bot.java</file>
+            <file>file:/Z:/Documents/informatique/garlic_heist/Garlic_Heist/src/garlic_heist/BroullonTestSourisMultijoueur.java</file>
+            <file>file:/Z:/Documents/informatique/garlic_heist/Garlic_Heist/src/garlic_heist/Objets.java</file>
         </group>
     </open-files>
 </project-private>
