@@ -33,15 +33,16 @@ public class Bot {
         this.direction = "droite";
     }
     private int[][] pointsPatrouille = {
-        {7, 5},   // Point 1 
-        {8, 16},  // Point 2 
-        {12, 29}, // Point 3 
+        {8, 6},   // Point 1 
+        {8, 14},  // Point 2 
+        {29, 12}, // Point 3 
         {15, 18},   // Point 4 
-        {21, 18},   // Point 5
-        {7, 28}   // Point 6
+        {19, 18},   // Point 5
+        {28, 7}   // Point 6
     };
     
-    
+    private long finRotationTimestamp = 0;
+    private int nombreToursEffectues = 0;
     private int indexPointActuel = 0;
     
    
@@ -101,10 +102,9 @@ public class Bot {
     
     public void agir(Carte carte, souris souris) {
         
-        piegeAil(carte);// 1. On vérifie d'abord s'il y a un piège à ail sous ses pieds
+        piegeAil(carte); // 1. On vérifie d'abord s'il y a un piège à ail sous ses pieds
 
-        
-        if (estBloque) {// 2. S'il est bloqué par l'ail, il ne fait rien de ce tour
+        if (estBloque) { // 2. S'il est bloqué par l'ail, il ne fait rien de ce tour
             return; 
         }
         // Transition vers la poursuite si on patrouille et qu'on détecte la souris
@@ -116,38 +116,62 @@ public class Bot {
 
         // Gestion des états 
         if (etatActuel == EtatBot.PATROUILLE) {
-            if (chemin == null || prochaineEtape >= chemin.size()) {
+            if (chemin == null || chemin.isEmpty()) {
+                // Premier lancement ou chemin invalide : on choisit directement le premier point de la ronde
                 prochaineDestinationPatrouille(carte);
-            } else {
+            } 
+            else if (prochaineEtape >= chemin.size()) {
+                // Arrivé au bout du chemin : on passe en mode TOURNE
+                etatActuel = EtatBot.TOURNE;
+                nombreToursEffectues = 0;
+                finRotationTimestamp = System.currentTimeMillis(); 
+            } 
+            else {
+                // En cours de route vers le point de patrouille
                 avancer();
             }
         } 
+        else if (etatActuel == EtatBot.TOURNE) {
+            // Fait une pause de 300ms entre chaque quart de tour pour faire son 360°
+            if (System.currentTimeMillis() >= finRotationTimestamp) {
+                tour(); 
+                nombreToursEffectues++;
+                finRotationTimestamp = System.currentTimeMillis() + 300; 
+
+                // Quand il a fait ses 4 quarts de tour, il repart vers le prochain point de la ronde
+                if (nombreToursEffectues >= 4) {
+                    etatActuel = EtatBot.PATROUILLE;
+                    prochaineDestinationPatrouille(carte);
+                }
+            }
+        }
         else if (etatActuel == EtatBot.POURSUITE) {
             if (detecterZone(souris.getPositionX(), souris.getPositionY())) {
-                // Si le bot l'a attrapée
+                // Si le bot est au contact de la souris (distance de 0 ou 1 case)
                 if (Math.abs(souris.getPositionX() - x) <= 1 && Math.abs(souris.getPositionY() - y) <= 1) {
-                    attaque(souris); 
-                    etatActuel = EtatBot.RETOUR; 
-                    deplacerVers(carte, dernierPointX, dernierPointY); 
+                    // Au lieu de bloquer, on le fait repasser directement en patrouille 
+                    // ou reprendre sa ronde pour qu'il ne se fige pas sur place
+                    etatActuel = EtatBot.PATROUILLE;
+                    prochaineDestinationPatrouille(carte);
                 } 
                 else {
-                    // Poursuit la souris en temps réel
-                    deplacerVers(carte, souris.getPositionX(), souris.getPositionY());
-                    avancer();
+                    // Poursuite normale vers la souris
+                    boolean cheminTrouveVersSouris = deplacerVers(carte, souris.getPositionX(), souris.getPositionY());
+                    
+                    if (cheminTrouveVersSouris && chemin != null && !chemin.isEmpty()) {
+                        avancer();
+                    } 
+                    else {
+                        // S'il est bloqué par un mur, il retourne en patrouille
+                        etatActuel = EtatBot.PATROUILLE;
+                        prochaineDestinationPatrouille(carte);
+                    }
                 }
             } 
             else {
-                // Souris perdue de vue, on retourne au point de départ
-                etatActuel = EtatBot.RETOUR;
-                deplacerVers(carte, dernierPointX, dernierPointY);
-            }
-        } 
-        else if (etatActuel == EtatBot.RETOUR) {
-            if (chemin == null || prochaineEtape >= chemin.size()) {
+                // Souris perdue de vue, on repart en patrouille
                 etatActuel = EtatBot.PATROUILLE;
-            } 
-            else {
-                avancer();
+                prochaineDestinationPatrouille(carte);
             }
         }
     }
@@ -156,7 +180,7 @@ public class Bot {
         if (pointsPatrouille.length == 0){
             return;
         }
-
+            System.out.println("--- Prochain point de patrouille index " + indexPointActuel + " : X=" + pointsPatrouille[indexPointActuel][0] + ", Y=" + pointsPatrouille[indexPointActuel][1]);
             // Récupère les coordonnées X et Y du point actuel dans le tableau
             int destX = pointsPatrouille[indexPointActuel][0];
             int destY = pointsPatrouille[indexPointActuel][1];
@@ -173,7 +197,7 @@ public class Bot {
     public boolean deplacerVers(Carte carte, int destinationX, int destinationY) {
         this.chemin = carte.trouverChemin(x, y, destinationX, destinationY);
         this.prochaineEtape = 0;
-
+        
         // Sécurité : si le chemin est null ou vide alors qu'on n'est pas déjà sur place
         if (this.chemin == null || (this.chemin.isEmpty() && (x != destinationX || y != destinationY))) {
             this.chemin = new ArrayList<>(); // Évite le null
@@ -215,10 +239,7 @@ public class Bot {
 
         return true;
     }
-    
-    public void attaque(souris souris){
-        souris.retournerAuSpawn();
-    }
+   
     
     public void piegeAil(Carte carte) {
         // Si le bot est déjà bloqué, on vérifie si les 2 secondes sont écoulées
@@ -239,29 +260,48 @@ public class Bot {
     
    
     public boolean detecterZone(int sourisX, int sourisY) {
-        
-        int distanceX = sourisX - x;
-        int distanceY = sourisY - y;
-                
-        boolean autour = Math.abs(distanceX) <= 1 && Math.abs(distanceY) <= 1 && (distanceX != 0 || distanceY != 0);
-        
-        boolean devant = false;
+    int distanceX = sourisX - x;
+    int distanceY = sourisY - y;
 
-        if (direction.equals("haut")) {
-            devant = distanceY >= -5 && distanceY <= -1 && Math.abs(distanceX) <= 1;
-        }
-        else if (direction.equals("bas")) {
-            devant = distanceY >= 1 && distanceY <= 5 && Math.abs(distanceX) <= 1;
-        }
-        else if (direction.equals("gauche")) {
-            devant = distanceX >= -5 && distanceX <= -1 && Math.abs(distanceY) <= 1;
-        }
-        else if (direction.equals("droite")) {
-            devant = distanceX >= 1 && distanceX <= 5 && Math.abs(distanceY) <= 1;
-        }
+    // Portée adaptée selon l'état du bot
+    int portee = (etatActuel == EtatBot.POURSUITE) ? 8 : 7;
+    int porteeArriere = (etatActuel == EtatBot.POURSUITE) ? 4 : 3;
 
-        return autour || devant;
+    boolean autour = Math.abs(distanceX) <= 3 && Math.abs(distanceY) <= 3;
+
+    boolean champDeVision = false;
+
+    if (direction.equals("haut")) {
+        champDeVision = (distanceY >= -portee && distanceY <= -1) && (Math.abs(distanceX) <= (portee / 2));
+    }
+    else if (direction.equals("bas")) {
+        champDeVision = (distanceY >= 1 && distanceY <= portee) && (Math.abs(distanceX) <= (portee / 2));
+    }
+    else if (direction.equals("gauche")) {
+        champDeVision = (distanceX >= -portee && distanceX <= -1) && (Math.abs(distanceY) <= (portee / 2));
+    }
+    else if (direction.equals("droite")) {
+        champDeVision = (distanceX >= 1 && distanceX <= portee) && (Math.abs(distanceY) <= (portee / 2));
+    }
+
+    boolean visionArriere = false;
+    if (direction.equals("haut")) {
+        visionArriere = (distanceY >= 1 && distanceY <= porteeArriere) && (Math.abs(distanceX) <= 2);
+    }
+    else if (direction.equals("bas")) {
+        visionArriere = (distanceY >= -porteeArriere && distanceY <= -1) && (Math.abs(distanceX) <= 2);
+    }
+    else if (direction.equals("gauche")) {
+        visionArriere = (distanceX >= 1 && distanceX <= porteeArriere) && (Math.abs(distanceY) <= 2);
+    }
+    else if (direction.equals("droite")) {
+        visionArriere = (distanceX >= -porteeArriere && distanceX <= -1) && (Math.abs(distanceX) <= 2);
+    }
+
+    return autour || champDeVision || visionArriere;
 }
+    
+    
     public void tour(){
         if (direction.equals("haut")) {
         direction = "droite";

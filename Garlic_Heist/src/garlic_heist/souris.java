@@ -39,7 +39,7 @@ public class souris {
     }
     private void appliquerLatence() {
         try {
-            Thread.sleep(150);                                                 // Met le programme en pause pendant 300 ms
+            Thread.sleep(100);                                                 // Met le programme en pause pendant 300 ms
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();                                // Restaure l'état d'interruption en cas de besoin
         }
@@ -72,7 +72,12 @@ public class souris {
             this.position[1] = -1;                                             // Fait disparaître la souris de l'axe Y (hors de la grille)
         }
     }
-
+        
+    public void setPosition(double x, double y) {
+        this.position[0] = x;
+        this.position[1] = y;
+    }
+    
     public void perte_vie(Bot botEnnemi) {
         double[] posBot = botEnnemi.getposition();
         if (Math.abs(this.position[0] - posBot[0]) + Math.abs(this.position[1] - posBot[1]) == 1) {
