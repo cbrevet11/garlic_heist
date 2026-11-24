@@ -21,25 +21,25 @@ public class Carte {
     private static final String[][] NIVEAUX = {
         { // ----- Niveau 0 -----
             "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",
-            "v[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[vvvvvvv",
-            "v<..aa.....cc|..rrcrr..|cc........vvvvvv",
-            "v<..........f|..rrrrr..|ff........vvvvvv",
-            "v<..aa.......|....b....|.........>vvvvvv",
-            "v<..aa.......bbbbbbbbbbb.........>vvvvvv",
-            "v<...........bbbbbbbbbbb.........>vvvvvv",
-            "v<ttt........|....b....|..............>v",
-            "v<ttt........|....b....|..............>v",
+            "v[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[vvvvvv",
+            "v<..g......cc|.rrcccrr.|cc.......gvvvvvv",
+            "v<..........f|.rrrrrrr.|f........gvvvvvv",
+            "v<.aa.aa.aa..|.rrrrrrr.|.........>vvvvvv",
+            "v<.aa.aa.aa....rrrrrrr.......g...>vvvvvv",
+            "v<.............rrrrrrr...........>[[[[>v",
+            "v<ttt...g....|.rrrrrrr.|..g...........>v",
+            "v<ttt........|.rrrrrrr.|..........g...>v",
             "v<---..------|.bbbbbbb.|----..-------->v",
-            "v<.......cccc|.b.....b.|.........ttt..>v",
-            "v<.........ff|.b.~~~.b.|.........ttt..>v",
-            "v<...............~~~..................>v",
-            "v<...............~~~...r...r.r.rrr.rrr>v",
-            "v<...........|...~~~..|.r.r..r.r....r.>v",
-            "v<.........s.|...~~~..|..r...r.rrr..r.>v",
-            "v<.----------|...~~~..|...............>v",
-            "v<...........|........|..rr...rrr.....>v",
-            "v<...........|........|.r..r..rrr.....>v",
-            "v<tt..................|..rr...r..r....>v",
+            "v<tt.....cccc|.b.....b.|..g......ttt..>v",
+            "v<..........f|.b.~~~.b.|.........ttt..>v",
+            "v<.aaaaaaaa....b.~~~.b...........g....>v",
+            "v<.............b.~~~.b.r...r.r.rrr.rrr>v",
+            "v<.aaaaaaaa..|.b.~~~.b.|r.r..r.r....r.>v",
+            "v<..........t|.b.~~~.b.|.r...r.rrr..r.>v",
+            "v<.----------|.b.~~~.b.|..............>v",
+            "v<..........t|.b.....b.|..r..rr...g...>v",
+            "v<..........t|.bbbbbbb.|.r.r.rr.......>v",
+            "v<tt...................|..r..r.r......>v",
             "v]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]v",
             "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",
         }
@@ -62,14 +62,15 @@ public class Carte {
     private char[][] cases;
     private int nbLignes;
     private int nbColonnes;
-
+    private boolean[][] occupe;   // cases bloquées par un objet
+    
     private BufferedImage tileset;
     private Map<Character, BufferedImage> images = new HashMap<>();
     private Set<Character> bloquants = new HashSet<>();
 
     private Map<String, Modele> modeles = new HashMap<>();
     private ArrayList<ObjetPose> objets = new ArrayList<>();
-    private boolean[][] occupe;   // cases bloquées par un objet
+    
 
     // Ancien appel : new Carte()  ->  charge le niveau 0
     public Carte() {
