@@ -2,7 +2,7 @@ package garlic_heist;
 
 /**
  *
- * @author vdavietttt
+ * @author vdaviet
  */
 public class Findejeu {
 
@@ -21,4 +21,4 @@ public class Findejeu {
             System.exit(0);                                                    // Stoppe complètement l'application Java
         }
     }
-}  /////111111
+}
