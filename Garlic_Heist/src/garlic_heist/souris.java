@@ -39,7 +39,7 @@ public class souris {
     }
     private void appliquerLatence() {
         try {
-            Thread.sleep(150);                                                 // Met le programme en pause pendant 300 ms
+            Thread.sleep(15);                                                 // Met le programme en pause pendant 300 ms
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();                                // Restaure l'état d'interruption en cas de besoin
         }
