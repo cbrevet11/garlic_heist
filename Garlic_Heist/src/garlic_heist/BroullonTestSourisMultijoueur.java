@@ -11,7 +11,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BroullonTestSourisMultijoueur extends JFrame {
     private static final int CASE = 42;
-    private static final int PERIODE_MS = 500;
+    private static final int PERIODE_MS = 200; // Bot et actualisation : 5 fois par seconde
+    private static final int DEPLACEMENT_MS = 150; // Un pas toutes les 120 ms pendant le maintien
     private static final long INVULNERABILITE_MS = 1800;
     private static final long REAPPARITION_OBJET_MS = 3000;
 
@@ -26,6 +27,12 @@ public class BroullonTestSourisMultijoueur extends JFrame {
     private final JLabel etat = new JLabel("", SwingConstants.CENTER);
     private final ScheduledExecutorService reseau = Executors.newSingleThreadScheduledExecutor();
     private final AtomicBoolean fermeture = new AtomicBoolean(false);
+    // Les touches sont gerees sur le thread graphique Swing (EDT).
+    // La derniere touche appuyee a priorite si plusieurs sont maintenues.
+    private final LinkedHashSet<Integer> touchesEnfoncees = new LinkedHashSet<>();
+    private final javax.swing.Timer minuterieDeplacement;
+    private final AtomicBoolean deplacementEnCours = new AtomicBoolean(false);
+    private volatile int toucheActive = -1;
     private volatile double[] positionLocale;
     private volatile Map<Integer, double[]> joueursDistants = Collections.emptyMap();
     private volatile Map<Integer, double[]> objets = Collections.emptyMap();
@@ -99,6 +106,8 @@ public class BroullonTestSourisMultijoueur extends JFrame {
         add(new JLabel("ZQSD : deplacement | A/B/C : objets | Noir : bot | I : ramassages", SwingConstants.CENTER),
                 BorderLayout.SOUTH);
         touches();
+        minuterieDeplacement = new javax.swing.Timer(DEPLACEMENT_MS, e -> deplacerSiMaintenu());
+        minuterieDeplacement.setCoalesce(true);
         setSize(1000, 750);
         setLocationRelativeTo(null);
         rafraichirVue();
@@ -120,9 +129,20 @@ public class BroullonTestSourisMultijoueur extends JFrame {
             }
         }, 0, PERIODE_MS, TimeUnit.MILLISECONDS);
 
+        addWindowFocusListener(new WindowAdapter() {
+            @Override public void windowLostFocus(WindowEvent e) {
+                toucheActive = -1;
+                touchesEnfoncees.clear();
+                minuterieDeplacement.stop();
+            }
+        });
+
         addWindowListener(new WindowAdapter() {
             @Override public void windowClosed(WindowEvent e) {
                 if (!fermeture.compareAndSet(false, true)) return;
+                minuterieDeplacement.stop();
+                toucheActive = -1;
+                touchesEnfoncees.clear();
                 reseau.execute(() -> {
                     try { joueur.quitterPartie(); }
                     finally { accesBot.fermerConnexion(); }
@@ -373,10 +393,10 @@ public class BroullonTestSourisMultijoueur extends JFrame {
     }
 
     private void touches() {
-        touche(KeyEvent.VK_Z, "haut", 0, -1);
-        touche(KeyEvent.VK_S, "bas", 0, 1);
-        touche(KeyEvent.VK_Q, "gauche", -1, 0);
-        touche(KeyEvent.VK_D, "droite", 1, 0);
+        touche(KeyEvent.VK_Z, "haut");
+        touche(KeyEvent.VK_S, "bas");
+        touche(KeyEvent.VK_Q, "gauche");
+        touche(KeyEvent.VK_D, "droite");
         dessin.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
                 .put(KeyStroke.getKeyStroke(KeyEvent.VK_I, 0), "objets");
         dessin.getActionMap().put("objets", new AbstractAction() {
@@ -391,33 +411,82 @@ public class BroullonTestSourisMultijoueur extends JFrame {
         });
     }
 
-    private void touche(int code, String action, int dx, int dy) {
-        dessin.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
-                .put(KeyStroke.getKeyStroke(code, 0), action);
-        dessin.getActionMap().put(action, new AbstractAction() {
+    private void touche(int code, String action) {
+        InputMap input = dessin.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap actions = dessin.getActionMap();
+
+        input.put(KeyStroke.getKeyStroke(code, 0, false), action + "_appui");
+        input.put(KeyStroke.getKeyStroke(code, 0, true), action + "_relachement");
+
+        actions.put(action + "_appui", new AbstractAction() {
             @Override public void actionPerformed(ActionEvent e) {
                 if (fermeture.get()) return;
-                reseau.execute(() -> {
-                    double[] p = joueur.getPosition();
-                    int nx = versCarteX(p) + dx, ny = versCarteY(p) + dy;
-                    if (!carte.caseAccessible(nx, ny)) return;
-                    switch (action) {
-                        case "haut": joueur.deplacerHaut(); break;
-                        case "bas": joueur.deplacerBas(); break;
-                        case "gauche": joueur.deplacerGauche(); break;
-                        case "droite": joueur.deplacerDroite(); break;
+                // Les repetitions automatiques du clavier ne modifient pas l'ordre.
+                if (touchesEnfoncees.add(code)) {
+                    toucheActive = code;
+                    if (!minuterieDeplacement.isRunning()) {
+                        minuterieDeplacement.start();
                     }
-                    try {
-                        Set<Integer> avant = objetsRamassesParMoi();
-                        joueur.ramasserObjets();
-                        enregistrerRamassagesLocaux(avant);
-                        lireEtat();
-                        verifierCollision();
-                        rafraichirVue();
-                    } catch (SQLException ex) {
-                        System.err.println("Erreur deplacement/ramassage : " + ex.getMessage());
-                    }
-                });
+                    deplacerSiMaintenu(); // Premier pas des l'appui.
+                }
+            }
+        });
+
+        actions.put(action + "_relachement", new AbstractAction() {
+            @Override public void actionPerformed(ActionEvent e) {
+                touchesEnfoncees.remove(code);
+                if (touchesEnfoncees.isEmpty()) {
+                    toucheActive = -1;
+                    minuterieDeplacement.stop(); // Arret des le relachement.
+                } else {
+                    int derniere = -1;
+                    for (int c : touchesEnfoncees) derniere = c;
+                    toucheActive = derniere;
+                }
+            }
+        });
+    }
+
+    // Un seul deplacement SQL a la fois pour eviter l'accumulation de requetes.
+    private void deplacerSiMaintenu() {
+        final int code = toucheActive;
+        if (fermeture.get() || code == -1 || !deplacementEnCours.compareAndSet(false, true)) return;
+
+        reseau.execute(() -> {
+            try {
+                // Si la touche a ete relachee pendant l'attente, ne pas avancer.
+                if (fermeture.get() || toucheActive != code) return;
+
+                int dx = 0, dy = 0;
+                switch (code) {
+                    case KeyEvent.VK_Z: dy = -1; break;
+                    case KeyEvent.VK_S: dy = 1; break;
+                    case KeyEvent.VK_Q: dx = -1; break;
+                    case KeyEvent.VK_D: dx = 1; break;
+                    default: return;
+                }
+                double[] p = joueur.getPosition();
+                int nx = versCarteX(p) + dx, ny = versCarteY(p) + dy;
+                if (!carte.caseAccessible(nx, ny)) return;
+                if (fermeture.get() || toucheActive != code) return;
+
+                switch (code) {
+                    case KeyEvent.VK_Z: joueur.deplacerHaut(); break;
+                    case KeyEvent.VK_S: joueur.deplacerBas(); break;
+                    case KeyEvent.VK_Q: joueur.deplacerGauche(); break;
+                    case KeyEvent.VK_D: joueur.deplacerDroite(); break;
+                }
+
+                Set<Integer> avant = objetsRamassesParMoi();
+                joueur.ramasserObjets();
+                enregistrerRamassagesLocaux(avant);
+                lireEtat();
+                verifierCollision();
+                rafraichirVue();
+            } catch (SQLException ex) {
+                System.err.println("Erreur deplacement/ramassage : " + ex.getMessage());
+            } finally {
+                deplacementEnCours.set(false);
             }
         });
     }
