@@ -48,6 +48,7 @@ public class BroullonTestSourisMultijoueur extends JFrame {
     private final Random aleatoire = new Random();
     // Historique local du joueur, comme la liste A/B/C de Testsouris.
     private final List<Integer> ramassagesLocaux = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private final souris botSourisCible = new souris();
 
     public BroullonTestSourisMultijoueur(Joueur joueur, Carte carte, boolean hote) throws SQLException {
         this.joueur = joueur;
@@ -282,22 +283,38 @@ public class BroullonTestSourisMultijoueur extends JFrame {
     }
 
     private void avancerBot() throws SQLException {
+        // 1. On récupère les positions des joueurs pour trouver la cible potentielle
         Map<Integer, double[]> positions = joueur.recupererPositions();
         positions.put(joueur.getIdJoueur(), joueur.getPosition());
-        int[] cible = null;
+        
+        double[] meilleurePositionCible = null;
         int plusCourt = Integer.MAX_VALUE;
         for (double[] p : positions.values()) {
             int x = versCarteX(p), y = versCarteY(p);
             if (!carte.caseAccessible(x, y)) continue;
             int distance = Math.abs(x - bot.getX()) + Math.abs(y - bot.getY());
-            if (distance < plusCourt) { plusCourt = distance; cible = new int[]{x, y}; }
+            if (distance < plusCourt) { 
+                plusCourt = distance; 
+                meilleurePositionCible = p; 
+            }
         }
-        if (cible != null && bot.deplacerVers(carte, cible[0], cible[1])) {
-            bot.avancer();
+
+        // 2. On met à jour la position de la souris cible virtuelle
+        if (meilleurePositionCible != null) {
+            int cibleX = versCarteX(meilleurePositionCible);
+            int cibleY = versCarteY(meilleurePositionCible);
+            botSourisCible.setPosition(cibleX, cibleY);
         }
+
+        // 3. Le bot exécute sa propre machine à états (Patrouille -> Tourne -> Poursuite)
+        bot.agir(carte, botSourisCible);
+
+        // 4. On synchronise la nouvelle position du bot dans la base de données
         try (PreparedStatement q = db.prepareStatement(
                 "UPDATE bots_partie SET position_x=?, position_y=? WHERE partie_id=?")) {
-            q.setInt(1, bot.getX()); q.setInt(2, bot.getY()); q.setInt(3, joueur.getIdPartie());
+            q.setInt(1, bot.getX()); 
+            q.setInt(2, bot.getY()); 
+            q.setInt(3, joueur.getIdPartie());
             q.executeUpdate();
         }
     }
