@@ -37,9 +37,9 @@ public class Carte {
             "v<.aaaaaaaa..|.b.~~~.b.|r.r..r.r....r.>v",
             "v<..........t|.b.~~~.b.|.r...r.rrr..r.>v",
             "v<.----------|.b.~~~.b.|..............>v",
-            "v<..........t|.b.....b.|..r..rr...g...>v",
-            "v<..........t|.bbbbbbb.|.r.r.rr.......>v",
-            "v<tt...................|..r..r.r......>v",
+            "v<xThjjkwwllj|.b.....b.|..r..rr...g...>v",
+            "v<xxxxxxxxxxx|.bbbbbbb.|.r.r.rr.......>v",
+            "v<ttxxxxxxxxx..........|..r..r.r......>v",
             "v]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]v",
             "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",
         }
@@ -116,16 +116,24 @@ public class Carte {
         definir(']', 0, 1, true);   // mur exté bas
         definir('>', 1, 1, true);   // mur exté droit
         definir('<', 2, 1, true);   // mur exté gauche
-        definir('-', 3, 1, true);    // mur horizontal
-        definir('f', 4, 1, true);   // or
-        definir('g', 5, 1, false);   // grille
-        definir('p', 6, 1, false);   // pics
-        definir('.', 0, 2, false);   // sol château
-        definir('b', 1, 2, false);   // sol beige
-        definir('r', 2, 2, false);   // sol rouge
-        definir('v', 3, 2, false);   // sol exté
-        definir('t', 1, 3, true);   // tonneau
-        definir('a', 5, 2, true);   // table, assiettes
+        definir('f', 3, 1, true);   // or
+        definir('g', 4, 1, false);   // grille
+        definir('p', 5, 1, false);   // pics
+        definir('.', 7, 1, false);   // sol château
+        definir('b', 0, 2, false);   // sol beige
+        definir('r', 1, 2, false);   // sol rouge
+        definir('v', 2, 2, false);   // sol exté
+        definir('t', 7, 2, true);   // tonneau
+        definir('a', 0, 3, true);   // table, assiettes
+        definir('T', 1, 3, true);   // the
+        definir('h', 2, 3, true);   // poile cuisine
+        definir('j', 3, 3, true);   // plan de travail
+        definir('k', 4, 3, true);   // cheminée
+        definir('l', 5, 3, true);   // lavabo
+        definir('m', 6, 3, true);   // lit
+        definir('-', 7, 3, true);    // mur horizontal
+        definir('w', 0, 4, true);   // plaques cuisson
+        definir('x', 1, 4, false);   // sol cuisine
     }
 
     // Découpe une tuile du tileset et l'associe à une lettre
